@@ -21,14 +21,7 @@ if (dbProvider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
 else
 {
     // Absoluten Pfad verwenden, damit SQLite in jeder Hosting-Umgebung schreiben kann
-    var dbPath = builder.Configuration.GetConnectionString("SQLite");
-    if (string.IsNullOrEmpty(dbPath) || dbPath == "Data Source=kontakte.db")
-    {
-        var dataDir = Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT") != null
-            ? "/tmp"
-            : builder.Environment.ContentRootPath;
-        dbPath = $"Data Source={Path.Combine(dataDir, "kontakte.db")}";
-    }
+    var dbPath = $"Data Source={Path.Combine(builder.Environment.ContentRootPath, "kontakte.db")}";
     builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlite(dbPath));
 }
 
