@@ -1,15 +1,45 @@
-/* kontakte.js — KontakteDB client-side scripts */
+/* kontakte.js — KontaktDatenbank client-side scripts */
 
 (function () {
     'use strict';
 
-    // ── Sidebar toggle (mobile) ──────────────────────────────────────────────
-    const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('sidebarToggle');
+    // ── Darkmode Toggle ──────────────────────────────────────────────────────────
+    var themeToggle = document.getElementById('themeToggle');
+    var themeIcon   = document.getElementById('themeIcon');
+
+    function applyTheme(dark) {
+        if (dark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
+        if (themeIcon) {
+            themeIcon.className = dark ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+        }
+        if (themeToggle) {
+            themeToggle.title = dark ? 'Hellmodus aktivieren' : 'Dunkelmodus aktivieren';
+        }
+    }
+
+    // Beim Laden: gespeicherte Präferenz anwenden (inline-script hat es schon
+    // für den HTML-Root gesetzt, hier Icon + title aktualisieren)
+    var savedTheme = localStorage.getItem('mc-theme');
+    applyTheme(savedTheme === 'dark');
+
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function () {
+            var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            applyTheme(!isDark);
+            localStorage.setItem('mc-theme', isDark ? 'light' : 'dark');
+        });
+    }
+
+    // ── Sidebar toggle (mobile) ──────────────────────────────────────────────────
+    var sidebar   = document.getElementById('sidebar');
+    var toggleBtn = document.getElementById('sidebarToggle');
 
     if (sidebar && toggleBtn) {
-        // Create overlay
-        const overlay = document.createElement('div');
+        var overlay = document.createElement('div');
         overlay.className = 'mc-sidebar-overlay';
         document.body.appendChild(overlay);
 
@@ -24,38 +54,12 @@
         });
     }
 
-    // ── Auto-dismiss alerts after 5 s ────────────────────────────────────────
+    // ── Auto-dismiss alerts after 5 s ────────────────────────────────────────────
     document.querySelectorAll('.alert-dismissible').forEach(function (alert) {
         setTimeout(function () {
-            const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+            var bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
             if (bsAlert) bsAlert.close();
         }, 5000);
-    });
-
-    // ── Confirm delete on links with data-confirm ────────────────────────────
-    document.querySelectorAll('[data-confirm]').forEach(function (el) {
-        el.addEventListener('click', function (e) {
-            if (!confirm(el.dataset.confirm || 'Wirklich löschen?')) {
-                e.preventDefault();
-            }
-        });
-    });
-
-    // ── Sort direction toggle for table headers ───────────────────────────────
-    // Allows clicking a sort header to reverse direction
-    document.querySelectorAll('[data-sort]').forEach(function (el) {
-        el.style.cursor = 'pointer';
-        el.addEventListener('click', function () {
-            const url = new URL(window.location.href);
-            const current = url.searchParams.get('sortBy');
-            const dir = url.searchParams.get('sortDir') || 'asc';
-            const col = el.dataset.sort;
-
-            url.searchParams.set('sortBy', col);
-            url.searchParams.set('sortDir', current === col && dir === 'asc' ? 'desc' : 'asc');
-            url.searchParams.set('page', '1');
-            window.location.href = url.toString();
-        });
     });
 
 })();
