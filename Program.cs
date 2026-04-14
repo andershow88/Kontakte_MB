@@ -41,16 +41,21 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<ImportService>();
 
+// ── Railway / Cloud: PORT-Umgebungsvariable respektieren ─────────────────────
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 var app = builder.Build();
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    // HSTS und HTTPS-Redirect deaktiviert: Railway terminiert TLS am Proxy
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // nicht auf Railway (TLS-Terminierung am Reverse Proxy)
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
