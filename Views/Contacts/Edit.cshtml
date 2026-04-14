@@ -1,0 +1,152 @@
+@model KontakteDB.Models.Contact
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Kontakt bearbeiten";
+    ViewData["Breadcrumb"] = $"<a href='/Contacts'>Kontakte</a> <span class='mx-1 text-muted'>/</span> <a href='/Contacts/Details/{Model.Id}'>{Model.DisplayName}</a> <span class='mx-1 text-muted'>/</span> <span>Bearbeiten</span>";
+    var companies = ViewBag.Companies as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> ?? Enumerable.Empty<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+}
+
+<div class="mc-page-header">
+    <div>
+        <h1 class="mc-page-title"><i class="bi bi-pencil me-2"></i>@Model.DisplayName bearbeiten</h1>
+    </div>
+</div>
+
+<div class="mc-card" style="max-width:820px;">
+    <div class="mc-card-body">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CreatedAt" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 mb-3" style="font-size:0.82rem;"></div>
+
+            <h6 class="text-muted mb-3" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:.06em;">Persönliche Daten</h6>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label asp-for="Salutation" class="form-label">Anrede</label>
+                    <select asp-for="Salutation" class="form-select">
+                        <option value="">—</option>
+                        <option>Herr</option>
+                        <option>Frau</option>
+                        <option>Divers</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Title" class="form-label">Titel</label>
+                    <input asp-for="Title" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="FirstName" class="form-label">Vorname</label>
+                    <input asp-for="FirstName" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="LastName" class="form-label fw-semibold">Nachname <span class="text-danger">*</span></label>
+                    <input asp-for="LastName" class="form-control" />
+                    <span asp-validation-for="LastName" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="CompanyId" class="form-label">Firma</label>
+                    <select asp-for="CompanyId" asp-items="companies" class="form-select">
+                        <option value="">— Keine Firma —</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Position" class="form-label">Position</label>
+                    <input asp-for="Position" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Department" class="form-label">Abteilung</label>
+                    <input asp-for="Department" class="form-control" />
+                </div>
+            </div>
+
+            <hr style="border-color:var(--mc-border);" class="my-4" />
+            <h6 class="text-muted mb-3" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:.06em;">Kontaktdaten</h6>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label">E-Mail</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope text-muted"></i></span>
+                        <input asp-for="Email" class="form-control" type="email" />
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Phone" class="form-label">Telefon</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-telephone text-muted"></i></span>
+                        <input asp-for="Phone" class="form-control" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Mobile" class="form-label">Mobil</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-phone text-muted"></i></span>
+                        <input asp-for="Mobile" class="form-control" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Fax" class="form-label">Fax</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-printer text-muted"></i></span>
+                        <input asp-for="Fax" class="form-control" />
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border-color:var(--mc-border);" class="my-4" />
+            <h6 class="text-muted mb-3" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:.06em;">Adresse</h6>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label asp-for="Street" class="form-label">Straße</label>
+                    <input asp-for="Street" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="ZipCode" class="form-label">PLZ</label>
+                    <input asp-for="ZipCode" class="form-control" />
+                </div>
+                <div class="col-md-5">
+                    <label asp-for="City" class="form-label">Ort</label>
+                    <input asp-for="City" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Country" class="form-label">Land</label>
+                    <input asp-for="Country" class="form-control" />
+                </div>
+            </div>
+
+            <hr style="border-color:var(--mc-border);" class="my-4" />
+            <div class="row g-3">
+                <div class="col-12">
+                    <label asp-for="PreferredGreeting" class="form-label">Briefanrede</label>
+                    <input asp-for="PreferredGreeting" class="form-control" />
+                </div>
+                <div class="col-12">
+                    <label asp-for="Notes" class="form-label">Notizen</label>
+                    <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input asp-for="IsFavorite" class="form-check-input" type="checkbox" />
+                        <label asp-for="IsFavorite" class="form-check-label">
+                            <i class="bi bi-star-fill me-1" style="color:#c0a030;"></i> Als Favorit markieren
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border-color:var(--mc-border);" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn-mc-primary">
+                    <i class="bi bi-check-lg me-1"></i> Speichern
+                </button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn-mc-ghost">Abbrechen</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

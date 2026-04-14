@@ -1,0 +1,216 @@
+@model KontakteDB.Models.Company
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Model.Name;
+    ViewData["Breadcrumb"] = $"<a href='/Companies'>Firmen</a> <span class='mx-1 text-muted'>/</span> <span>{Model.Name}</span>";
+}
+
+<div class="mc-page-header">
+    <div>
+        <h1 class="mc-page-title">
+            @if (Model.IsFavorite)
+            {
+                <i class="bi bi-star-fill me-2" style="color:#c0a030; font-size:1rem;"></i>
+            }
+            @Model.Name
+        </h1>
+        @if (!string.IsNullOrEmpty(Model.Industry))
+        {
+            <p class="mc-page-subtitle">@Model.Industry</p>
+        }
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <form asp-action="ToggleFavorite" asp-route-id="@Model.Id" method="post" style="display:inline;">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn-mc-ghost">
+                @if (Model.IsFavorite)
+                {
+                    <i class="bi bi-star-fill me-1" style="color:#c0a030;"></i> <span>Favorit entfernen</span>
+                }
+                else
+                {
+                    <i class="bi bi-star me-1"></i> <span>Als Favorit</span>
+                }
+            </button>
+        </form>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-mc-ghost">
+            <i class="bi bi-pencil me-1"></i> Bearbeiten
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn-mc-ghost" style="color:var(--mc-danger);">
+            <i class="bi bi-trash me-1"></i> Löschen
+        </a>
+        <a asp-controller="Contacts" asp-action="Create" asp-route-companyId="@Model.Id" class="btn-mc-primary">
+            <i class="bi bi-person-plus me-1"></i> Neuer Kontakt
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Stammdaten -->
+    <div class="col-lg-5">
+        <div class="mc-card">
+            <div class="mc-card-header">
+                <h2 class="mc-card-title"><i class="bi bi-buildings"></i> Stammdaten</h2>
+            </div>
+            <div class="mc-card-body">
+                <table class="table table-sm mb-0" style="font-size:0.85rem;">
+                    <tbody>
+                    @if (!string.IsNullOrEmpty(Model.Street) || !string.IsNullOrEmpty(Model.City))
+                    {
+                        <tr>
+                            <td class="text-muted" style="width:35%; white-space:nowrap;">Adresse</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(Model.Street)) { <div>@Model.Street</div> }
+                                @if (!string.IsNullOrEmpty(Model.ZipCode) || !string.IsNullOrEmpty(Model.City))
+                                {
+                                    <div>@(Model.ZipCode) @(Model.City)</div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Country)) { <div>@Model.Country</div> }
+                            </td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Phone))
+                    {
+                        <tr>
+                            <td class="text-muted">Telefon</td>
+                            <td><a href="tel:@Model.Phone" class="text-decoration-none" style="color:var(--mc-text);">@Model.Phone</a></td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <tr>
+                            <td class="text-muted">E-Mail</td>
+                            <td><a href="mailto:@Model.Email" class="text-decoration-none" style="color:var(--mc-accent);">@Model.Email</a></td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Website))
+                    {
+                        <tr>
+                            <td class="text-muted">Website</td>
+                            <td>
+                                @if (Model.Website.StartsWith("http"))
+                                {
+                                    <a href="@Model.Website" target="_blank" rel="noopener" class="text-decoration-none" style="color:var(--mc-accent);">@Model.Website</a>
+                                }
+                                else
+                                {
+                                    <a href="https://@Model.Website" target="_blank" rel="noopener" class="text-decoration-none" style="color:var(--mc-accent);">@Model.Website</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Industry))
+                    {
+                        <tr>
+                            <td class="text-muted">Branche</td>
+                            <td>@Model.Industry</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td class="text-muted">Erstellt</td>
+                        <td>@Model.CreatedAt.ToString("dd.MM.yyyy")</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Geändert</td>
+                        <td>@Model.UpdatedAt.ToString("dd.MM.yyyy")</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <hr style="border-color:var(--mc-border);" />
+                    <div class="small text-muted mb-1">Notizen</div>
+                    <div style="font-size:0.85rem; white-space:pre-line;">@Model.Notes</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Kontakte -->
+    <div class="col-lg-7">
+        <div class="mc-card">
+            <div class="mc-card-header">
+                <h2 class="mc-card-title"><i class="bi bi-people"></i> Kontakte (@Model.Contacts.Count(c => !c.IsDeleted))</h2>
+                <a asp-controller="Contacts" asp-action="Create" asp-route-companyId="@Model.Id" class="btn-mc-ghost" style="font-size:0.78rem;">
+                    <i class="bi bi-plus-lg me-1"></i> Neu
+                </a>
+            </div>
+            @{
+                var activeContacts = Model.Contacts.Where(c => !c.IsDeleted).OrderBy(c => c.LastName).ThenBy(c => c.FirstName).ToList();
+            }
+            @if (!activeContacts.Any())
+            {
+                <div class="mc-card-body text-center py-4 text-muted">
+                    <i class="bi bi-person fs-2 d-block mb-2 opacity-25"></i>
+                    Noch keine Kontakte vorhanden.
+                </div>
+            }
+            else
+            {
+                <div class="mc-table-wrapper">
+                    <table class="mc-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th class="d-none d-md-table-cell">Position</th>
+                                <th class="d-none d-lg-table-cell">Kontakt</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var contact in activeContacts)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if (contact.IsFavorite)
+                                        {
+                                            <i class="bi bi-star-fill" style="color:#c0a030; font-size:0.8rem;"></i>
+                                        }
+                                        <div>
+                                            <a asp-controller="Contacts" asp-action="Details" asp-route-id="@contact.Id"
+                                               class="fw-semibold text-decoration-none" style="color:var(--mc-text);">
+                                                @contact.DisplayName
+                                            </a>
+                                            @if (!string.IsNullOrEmpty(contact.Department))
+                                            {
+                                                <div class="small text-muted">@contact.Department</div>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="d-none d-md-table-cell" style="font-size:0.82rem; color:var(--mc-text-muted);">
+                                    @contact.Position
+                                </td>
+                                <td class="d-none d-lg-table-cell" style="font-size:0.82rem;">
+                                    @if (!string.IsNullOrEmpty(contact.Email))
+                                    {
+                                        <a href="mailto:@contact.Email" class="text-muted d-block text-decoration-none">
+                                            <i class="bi bi-envelope me-1"></i>@contact.Email
+                                        </a>
+                                    }
+                                    @if (!string.IsNullOrEmpty(contact.Phone))
+                                    {
+                                        <a href="tel:@contact.Phone" class="text-muted d-block text-decoration-none">
+                                            <i class="bi bi-telephone me-1"></i>@contact.Phone
+                                        </a>
+                                    }
+                                </td>
+                                <td style="text-align:right; white-space:nowrap;">
+                                    <a asp-controller="Contacts" asp-action="Details" asp-route-id="@contact.Id" class="btn-mc-ghost" style="padding:0.2rem 0.5rem;">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-controller="Contacts" asp-action="Edit" asp-route-id="@contact.Id" class="btn-mc-ghost" style="padding:0.2rem 0.5rem;">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

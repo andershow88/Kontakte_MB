@@ -1,0 +1,56 @@
+@model KontakteDB.Models.Company
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Firma löschen";
+    ViewData["Breadcrumb"] = $"<a href='/Companies'>Firmen</a> <span class='mx-1 text-muted'>/</span> <a href='/Companies/Details/{Model.Id}'>{Model.Name}</a> <span class='mx-1 text-muted'>/</span> <span>Löschen</span>";
+}
+
+<div class="mc-page-header">
+    <div>
+        <h1 class="mc-page-title"><i class="bi bi-trash me-2"></i>Firma löschen</h1>
+    </div>
+</div>
+
+<div class="mc-card" style="max-width:560px;">
+    <div class="mc-card-body">
+        <div class="alert alert-danger mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Achtung:</strong> Diese Aktion kann nicht rückgängig gemacht werden.
+        </div>
+
+        <p class="mb-1">Möchten Sie die folgende Firma wirklich löschen?</p>
+        <div class="mc-card mt-3 mb-4" style="background:var(--mc-bg-alt);">
+            <div class="mc-card-body">
+                <div class="fw-semibold fs-6">@Model.Name</div>
+                @if (!string.IsNullOrEmpty(Model.Industry))
+                {
+                    <div class="small text-muted">@Model.Industry</div>
+                }
+                @if (!string.IsNullOrEmpty(Model.City))
+                {
+                    <div class="small text-muted mt-1"><i class="bi bi-geo-alt me-1"></i>@(Model.ZipCode) @Model.City, @Model.Country</div>
+                }
+                @{
+                    var contactCount = Model.Contacts.Count(c => !c.IsDeleted);
+                }
+                @if (contactCount > 0)
+                {
+                    <div class="small mt-2 text-warning">
+                        <i class="bi bi-people me-1"></i>
+                        @contactCount Kontakt@(contactCount != 1 ? "e" : "") wird@(contactCount != 1 ? "en" : "") von dieser Firma getrennt (nicht gelöscht).
+                    </div>
+                }
+            </div>
+        </div>
+
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i> Endgültig löschen
+                </button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn-mc-ghost">Abbrechen</a>
+            </div>
+        </form>
+    </div>
+</div>

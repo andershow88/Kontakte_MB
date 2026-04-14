@@ -1,0 +1,182 @@
+@model KontakteDB.ViewModels.SearchViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Suche";
+    ViewData["SearchQuery"] = Model.Query;
+    ViewData["Breadcrumb"] = "<span>Suche</span>";
+}
+
+<div class="mc-page-header">
+    <div>
+        <h1 class="mc-page-title"><i class="bi bi-search me-2"></i>Globale Suche</h1>
+        @if (Model.Searched)
+        {
+            <p class="mc-page-subtitle">@Model.TotalResults Ergebnisse für „@Model.Query"</p>
+        }
+    </div>
+</div>
+
+<div class="mc-card mb-4">
+    <div class="mc-card-body">
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="q" value="@Model.Query" class="form-control"
+                   placeholder="Firma, Name, E-Mail, Telefon, Ort …"
+                   style="font-size:0.9rem;" autofocus />
+            <button type="submit" class="btn-mc-primary" style="white-space:nowrap;">
+                <i class="bi bi-search me-1"></i> Suchen
+            </button>
+        </form>
+    </div>
+</div>
+
+@if (Model.Searched && !Model.HasResults)
+{
+    <div class="mc-card">
+        <div class="mc-card-body text-center py-5 text-muted">
+            <i class="bi bi-search fs-2 d-block mb-2 opacity-25"></i>
+            Keine Ergebnisse für „@Model.Query" gefunden.
+        </div>
+    </div>
+}
+
+@if (Model.Companies.Any())
+{
+    <div class="mc-card mb-4">
+        <div class="mc-card-header">
+            <h2 class="mc-card-title"><i class="bi bi-buildings"></i> Firmen (@Model.Companies.Count)</h2>
+        </div>
+        <div class="mc-table-wrapper">
+            <table class="mc-table">
+                <thead>
+                    <tr>
+                        <th>Firmenname</th>
+                        <th class="d-none d-md-table-cell">Ort</th>
+                        <th class="d-none d-lg-table-cell">Kontakt</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var c in Model.Companies)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                @if (c.IsFavorite)
+                                {
+                                    <i class="bi bi-star-fill" style="color:#c0a030; font-size:0.8rem;"></i>
+                                }
+                                <div>
+                                    <a asp-controller="Companies" asp-action="Details" asp-route-id="@c.Id"
+                                       class="fw-semibold text-decoration-none" style="color:var(--mc-text);">
+                                        @c.Name
+                                    </a>
+                                    @if (!string.IsNullOrEmpty(c.Industry))
+                                    {
+                                        <div class="small text-muted">@c.Industry</div>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                        <td class="d-none d-md-table-cell" style="font-size:0.82rem; color:var(--mc-text-muted);">
+                            @(string.Join(" · ", new[] { c.City, c.Country }.Where(x => !string.IsNullOrWhiteSpace(x))))
+                        </td>
+                        <td class="d-none d-lg-table-cell" style="font-size:0.82rem;">
+                            @if (!string.IsNullOrEmpty(c.Phone))
+                            {
+                                <a href="tel:@c.Phone" class="text-muted d-block text-decoration-none">
+                                    <i class="bi bi-telephone me-1"></i>@c.Phone
+                                </a>
+                            }
+                            @if (!string.IsNullOrEmpty(c.Email))
+                            {
+                                <a href="mailto:@c.Email" class="text-muted d-block text-decoration-none">
+                                    <i class="bi bi-envelope me-1"></i>@c.Email
+                                </a>
+                            }
+                        </td>
+                        <td style="text-align:right;">
+                            <a asp-controller="Companies" asp-action="Details" asp-route-id="@c.Id" class="btn-mc-ghost" style="padding:0.2rem 0.5rem;">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (Model.Contacts.Any())
+{
+    <div class="mc-card mb-4">
+        <div class="mc-card-header">
+            <h2 class="mc-card-title"><i class="bi bi-people"></i> Kontakte (@Model.Contacts.Count)</h2>
+        </div>
+        <div class="mc-table-wrapper">
+            <table class="mc-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th class="d-none d-md-table-cell">Firma</th>
+                        <th class="d-none d-lg-table-cell">Kontaktdaten</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var c in Model.Contacts)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                @if (c.IsFavorite)
+                                {
+                                    <i class="bi bi-star-fill" style="color:#c0a030; font-size:0.8rem;"></i>
+                                }
+                                <div>
+                                    <a asp-controller="Contacts" asp-action="Details" asp-route-id="@c.Id"
+                                       class="fw-semibold text-decoration-none" style="color:var(--mc-text);">
+                                        @c.DisplayName
+                                    </a>
+                                    @if (!string.IsNullOrEmpty(c.Position))
+                                    {
+                                        <div class="small text-muted">@c.Position</div>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                        <td class="d-none d-md-table-cell" style="font-size:0.82rem; color:var(--mc-text-muted);">
+                            @if (c.Company != null)
+                            {
+                                <a asp-controller="Companies" asp-action="Details" asp-route-id="@c.Company.Id"
+                                   class="text-decoration-none" style="color:var(--mc-text-muted);">
+                                    @c.Company.Name
+                                </a>
+                            }
+                        </td>
+                        <td class="d-none d-lg-table-cell" style="font-size:0.82rem;">
+                            @if (!string.IsNullOrEmpty(c.Email))
+                            {
+                                <a href="mailto:@c.Email" class="text-muted d-block text-decoration-none">
+                                    <i class="bi bi-envelope me-1"></i>@c.Email
+                                </a>
+                            }
+                            @if (!string.IsNullOrEmpty(c.Phone))
+                            {
+                                <a href="tel:@c.Phone" class="text-muted d-block text-decoration-none">
+                                    <i class="bi bi-telephone me-1"></i>@c.Phone
+                                </a>
+                            }
+                        </td>
+                        <td style="text-align:right;">
+                            <a asp-controller="Contacts" asp-action="Details" asp-route-id="@c.Id" class="btn-mc-ghost" style="padding:0.2rem 0.5rem;">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

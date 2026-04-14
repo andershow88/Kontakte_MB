@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KontakteDB – @ViewData["Title"]</title>
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/merkur.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/kontakte.css" asp-append-version="true" />
+</head>
+<body class="mc-body">
+
+    <!-- Sidebar -->
+    <nav class="mc-sidebar" id="sidebar">
+        <div class="mc-sidebar-brand">
+            <div class="mc-logo">
+                <img src="~/images/merkur-logo.svg" alt="Merkur Privatbank KGaA" class="mc-logo-img" />
+                <div>
+                    <div class="mc-logo-title">KontakteDB</div>
+                    <div class="mc-logo-subtitle">MERKUR PRIVATBANK KGaA</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mc-sidebar-bank">
+            <div class="mc-sidebar-bank-label">Angemeldet als</div>
+            <div class="mc-sidebar-bank-name">
+                <i class="bi bi-person-circle me-1"></i>@User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value
+            </div>
+        </div>
+
+        <ul class="mc-nav">
+            <li class="mc-nav-item">
+                <a class="mc-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")"
+                   asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="mc-nav-item">
+                <a class="mc-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Companies" ? "active" : "")"
+                   asp-controller="Companies" asp-action="Index">
+                    <i class="bi bi-buildings"></i>
+                    <span>Firmen</span>
+                </a>
+            </li>
+            <li class="mc-nav-item">
+                <a class="mc-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Contacts" ? "active" : "")"
+                   asp-controller="Contacts" asp-action="Index">
+                    <i class="bi bi-people"></i>
+                    <span>Kontakte</span>
+                </a>
+            </li>
+            <li class="mc-nav-item">
+                <a class="mc-nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Search" ? "active" : "")"
+                   asp-controller="Search" asp-action="Index">
+                    <i class="bi bi-search"></i>
+                    <span>Suche</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="mc-sidebar-footer">
+            <form asp-controller="Account" asp-action="Logout" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="mc-logout-btn">
+                    <i class="bi bi-box-arrow-left"></i>
+                    <span>Abmelden</span>
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <div class="mc-main" id="main-content">
+        <header class="mc-topbar">
+            <button class="mc-sidebar-toggle d-lg-none" id="sidebarToggle">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="mc-breadcrumb">
+                @if (ViewData["Breadcrumb"] != null)
+                {
+                    @Html.Raw(ViewData["Breadcrumb"])
+                }
+            </div>
+            <div class="mc-topbar-right">
+                <span class="mc-topbar-date d-none d-md-inline">
+                    <i class="bi bi-calendar3 me-1"></i>@DateTime.Now.ToString("dd.MM.yyyy")
+                </span>
+                <form asp-controller="Search" asp-action="Index" method="get" class="d-flex" style="gap:0.4rem;">
+                    <input type="text" name="q" class="form-control form-control-sm"
+                           placeholder="Suche …" style="width:180px; border-color:var(--mc-border); font-size:0.82rem;"
+                           value="@ViewData["SearchQuery"]" />
+                    <button type="submit" class="btn-mc-ghost" style="padding:0.25rem 0.6rem;">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <main class="mc-content">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Warning"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Warning"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                    <i class="bi bi-x-circle-fill me-2"></i>@TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @RenderBody()
+        </main>
+
+        <footer class="mc-footer">
+            <span>&copy; @DateTime.Now.Year Merkur Privatbank KGaA – KontakteDB</span>
+            <span class="ms-3 text-muted small">Vertraulich</span>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/kontakte.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

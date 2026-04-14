@@ -1,0 +1,185 @@
+@model KontakteDB.ViewModels.ContactListViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Kontakte";
+    ViewData["Breadcrumb"] = "<span>Kontakte</span>";
+}
+
+<div class="mc-page-header">
+    <div>
+        <h1 class="mc-page-title"><i class="bi bi-people me-2"></i>Kontakte</h1>
+        <p class="mc-page-subtitle">@Model.TotalCount Kontakte gefunden</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="ExportCsv" asp-route-q="@Model.SearchTerm" class="btn-mc-ghost">
+            <i class="bi bi-download me-1"></i> CSV
+        </a>
+        <a asp-action="Create" class="btn-mc-primary">
+            <i class="bi bi-person-plus me-1"></i> Neuer Kontakt
+        </a>
+    </div>
+</div>
+
+<!-- Filter-Leiste -->
+<form method="get" class="mc-filter-bar mb-3">
+    <input type="text" name="q" value="@Model.SearchTerm" class="form-control"
+           placeholder="Suche nach Name, E-Mail, Telefon …" style="min-width:220px; flex:1;" />
+
+    <select name="companyId" class="form-select" style="min-width:180px;">
+        <option value="">Alle Firmen</option>
+        @foreach (var co in Model.Companies)
+        {
+            <option value="@co.Id" selected="@(Model.FilterCompanyId == co.Id)">@co.Name</option>
+        }
+    </select>
+
+    <select name="city" class="form-select" style="min-width:130px;">
+        <option value="">Alle Orte</option>
+        @foreach (var c in Model.Cities)
+        {
+            <option value="@c" selected="@(Model.FilterCity == c)">@c</option>
+        }
+    </select>
+
+    <select name="hasEmail" class="form-select" style="min-width:120px;">
+        <option value="">Alle</option>
+        <option value="true" selected="@(Model.HasEmail == true)">Mit E-Mail</option>
+        <option value="false" selected="@(Model.HasEmail == false)">Ohne E-Mail</option>
+    </select>
+
+    <select name="sortBy" class="form-select" style="min-width:160px;">
+        <option value="name" selected="@(Model.SortBy == "name" || Model.SortBy == null)">Name A–Z</option>
+        <option value="company" selected="@(Model.SortBy == "company")">Firma A–Z</option>
+        <option value="updated" selected="@(Model.SortBy == "updated")">Zuletzt geändert</option>
+        <option value="created" selected="@(Model.SortBy == "created")">Zuletzt erstellt</option>
+    </select>
+
+    <button type="submit" class="btn-mc-primary">
+        <i class="bi bi-funnel me-1"></i> Filtern
+    </button>
+    @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || Model.FilterCompanyId.HasValue || !string.IsNullOrWhiteSpace(Model.FilterCity) || Model.HasEmail.HasValue)
+    {
+        <a asp-action="Index" class="btn-mc-ghost">
+            <i class="bi bi-x-lg"></i>
+        </a>
+    }
+</form>
+
+<div class="mc-card">
+    @if (!Model.Contacts.Any())
+    {
+        <div class="mc-card-body text-center py-5 text-muted">
+            <i class="bi bi-people fs-2 d-block mb-2 opacity-25"></i>
+            Keine Kontakte gefunden.
+        </div>
+    }
+    else
+    {
+        <div class="mc-table-wrapper">
+            <table class="mc-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th class="d-none d-md-table-cell">Firma</th>
+                        <th class="d-none d-lg-table-cell">Telefon / E-Mail</th>
+                        <th class="d-none d-sm-table-cell">Ort</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var c in Model.Contacts)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                @if (c.IsFavorite)
+                                {
+                                    <i class="bi bi-star-fill" style="color:#c0a030; font-size:0.8rem;"></i>
+                                }
+                                <div>
+                                    <a asp-action="Details" asp-route-id="@c.Id"
+                                       class="fw-semibold text-decoration-none" style="color:var(--mc-text);">
+                                        @c.DisplayName
+                                    </a>
+                                    @if (!string.IsNullOrEmpty(c.Position))
+                                    {
+                                        <div class="small text-muted">@c.Position</div>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                        <td class="d-none d-md-table-cell" style="font-size:0.82rem; color:var(--mc-text-muted);">
+                            @if (c.Company != null)
+                            {
+                                <a asp-controller="Companies" asp-action="Details" asp-route-id="@c.Company.Id"
+                                   class="text-decoration-none" style="color:var(--mc-text-muted);">
+                                    @c.Company.Name
+                                </a>
+                            }
+                        </td>
+                        <td class="d-none d-lg-table-cell" style="font-size:0.82rem;">
+                            @if (!string.IsNullOrEmpty(c.Phone))
+                            {
+                                <a href="tel:@c.Phone" class="text-muted d-block text-decoration-none">
+                                    <i class="bi bi-telephone me-1"></i>@c.Phone
+                                </a>
+                            }
+                            @if (!string.IsNullOrEmpty(c.Mobile))
+                            {
+                                <a href="tel:@c.Mobile" class="text-muted d-block text-decoration-none">
+                                    <i class="bi bi-phone me-1"></i>@c.Mobile
+                                </a>
+                            }
+                            @if (!string.IsNullOrEmpty(c.Email))
+                            {
+                                <a href="mailto:@c.Email" class="text-muted d-block text-decoration-none">
+                                    <i class="bi bi-envelope me-1"></i>@c.Email
+                                </a>
+                            }
+                        </td>
+                        <td class="d-none d-sm-table-cell" style="font-size:0.82rem; color:var(--mc-text-muted);">
+                            @(string.Join(" ", new[] { c.ZipCode, c.City }.Where(x => !string.IsNullOrWhiteSpace(x))))
+                        </td>
+                        <td style="text-align:right; white-space:nowrap;">
+                            <a asp-action="Details" asp-route-id="@c.Id" class="btn-mc-ghost" style="padding:0.2rem 0.5rem;">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@c.Id" class="btn-mc-ghost" style="padding:0.2rem 0.5rem;">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <div class="mc-card-body d-flex justify-content-between align-items-center" style="border-top:1px solid var(--mc-border);">
+                <span class="small text-muted">
+                    Seite @Model.Page von @Model.TotalPages (@Model.TotalCount Einträge)
+                </span>
+                <div class="d-flex gap-1">
+                    @if (Model.Page > 1)
+                    {
+                        <a asp-action="Index" asp-route-q="@Model.SearchTerm" asp-route-companyId="@Model.FilterCompanyId"
+                           asp-route-city="@Model.FilterCity" asp-route-page="@(Model.Page - 1)"
+                           class="btn-mc-ghost" style="padding:0.25rem 0.6rem;">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    }
+                    @if (Model.Page < Model.TotalPages)
+                    {
+                        <a asp-action="Index" asp-route-q="@Model.SearchTerm" asp-route-companyId="@Model.FilterCompanyId"
+                           asp-route-city="@Model.FilterCity" asp-route-page="@(Model.Page + 1)"
+                           class="btn-mc-primary" style="padding:0.25rem 0.6rem;">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

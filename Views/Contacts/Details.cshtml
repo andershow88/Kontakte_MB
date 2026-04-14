@@ -1,0 +1,183 @@
+@model KontakteDB.Models.Contact
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Model.DisplayName;
+    ViewData["Breadcrumb"] = $"<a href='/Contacts'>Kontakte</a> <span class='mx-1 text-muted'>/</span> <span>{Model.DisplayName}</span>";
+}
+
+<div class="mc-page-header">
+    <div>
+        <h1 class="mc-page-title">
+            @if (Model.IsFavorite)
+            {
+                <i class="bi bi-star-fill me-2" style="color:#c0a030; font-size:1rem;"></i>
+            }
+            @Model.DisplayName
+        </h1>
+        @if (!string.IsNullOrEmpty(Model.Position))
+        {
+            <p class="mc-page-subtitle">
+                @Model.Position
+                @if (Model.Company != null)
+                {
+                    <span> · <a asp-controller="Companies" asp-action="Details" asp-route-id="@Model.Company.Id"
+                               class="text-decoration-none" style="color:var(--mc-accent);">@Model.Company.Name</a></span>
+                }
+            </p>
+        }
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <form asp-action="ToggleFavorite" asp-route-id="@Model.Id" method="post" style="display:inline;">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn-mc-ghost">
+                @if (Model.IsFavorite)
+                {
+                    <i class="bi bi-star-fill me-1" style="color:#c0a030;"></i> <span>Favorit entfernen</span>
+                }
+                else
+                {
+                    <i class="bi bi-star me-1"></i> <span>Als Favorit</span>
+                }
+            </button>
+        </form>
+        @if (!string.IsNullOrEmpty(Model.Email))
+        {
+            <a href="mailto:@Model.Email" class="btn-mc-ghost">
+                <i class="bi bi-envelope me-1"></i> E-Mail schreiben
+            </a>
+        }
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-mc-ghost">
+            <i class="bi bi-pencil me-1"></i> Bearbeiten
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn-mc-ghost" style="color:var(--mc-danger);">
+            <i class="bi bi-trash me-1"></i> Löschen
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="mc-card">
+            <div class="mc-card-header">
+                <h2 class="mc-card-title"><i class="bi bi-person"></i> Kontaktdaten</h2>
+            </div>
+            <div class="mc-card-body">
+                <table class="table table-sm mb-0" style="font-size:0.85rem;">
+                    <tbody>
+                    @if (!string.IsNullOrEmpty(Model.Salutation) || !string.IsNullOrEmpty(Model.Title))
+                    {
+                        <tr>
+                            <td class="text-muted" style="width:35%;">Anrede</td>
+                            <td>@(string.Join(" ", new[] { Model.Salutation, Model.Title }.Where(x => !string.IsNullOrEmpty(x))))</td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Department))
+                    {
+                        <tr>
+                            <td class="text-muted">Abteilung</td>
+                            <td>@Model.Department</td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Position))
+                    {
+                        <tr>
+                            <td class="text-muted">Position</td>
+                            <td>@Model.Position</td>
+                        </tr>
+                    }
+                    @if (Model.Company != null)
+                    {
+                        <tr>
+                            <td class="text-muted">Firma</td>
+                            <td>
+                                <a asp-controller="Companies" asp-action="Details" asp-route-id="@Model.Company.Id"
+                                   class="text-decoration-none" style="color:var(--mc-accent);">
+                                    @Model.Company.Name
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <tr>
+                            <td class="text-muted">E-Mail</td>
+                            <td><a href="mailto:@Model.Email" class="text-decoration-none" style="color:var(--mc-accent);">@Model.Email</a></td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Phone))
+                    {
+                        <tr>
+                            <td class="text-muted">Telefon</td>
+                            <td><a href="tel:@Model.Phone" class="text-decoration-none" style="color:var(--mc-text);">@Model.Phone</a></td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Mobile))
+                    {
+                        <tr>
+                            <td class="text-muted">Mobil</td>
+                            <td><a href="tel:@Model.Mobile" class="text-decoration-none" style="color:var(--mc-text);">@Model.Mobile</a></td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Fax))
+                    {
+                        <tr>
+                            <td class="text-muted">Fax</td>
+                            <td>@Model.Fax</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="mc-card">
+            <div class="mc-card-header">
+                <h2 class="mc-card-title"><i class="bi bi-geo-alt"></i> Adresse &amp; Sonstiges</h2>
+            </div>
+            <div class="mc-card-body">
+                <table class="table table-sm mb-0" style="font-size:0.85rem;">
+                    <tbody>
+                    @if (!string.IsNullOrEmpty(Model.Street) || !string.IsNullOrEmpty(Model.City))
+                    {
+                        <tr>
+                            <td class="text-muted" style="width:35%;">Adresse</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(Model.Street)) { <div>@Model.Street</div> }
+                                @if (!string.IsNullOrEmpty(Model.ZipCode) || !string.IsNullOrEmpty(Model.City))
+                                {
+                                    <div>@(Model.ZipCode) @(Model.City)</div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Country)) { <div>@Model.Country</div> }
+                            </td>
+                        </tr>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.PreferredGreeting))
+                    {
+                        <tr>
+                            <td class="text-muted">Briefanrede</td>
+                            <td style="white-space:pre-line;">@Model.PreferredGreeting</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td class="text-muted">Erstellt</td>
+                        <td>@Model.CreatedAt.ToString("dd.MM.yyyy")</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Geändert</td>
+                        <td>@Model.UpdatedAt.ToString("dd.MM.yyyy")</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <hr style="border-color:var(--mc-border);" />
+                    <div class="small text-muted mb-1">Notizen</div>
+                    <div style="font-size:0.85rem; white-space:pre-line;">@Model.Notes</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

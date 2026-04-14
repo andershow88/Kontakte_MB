@@ -1,0 +1,222 @@
+@model KontakteDB.ViewModels.DashboardViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Dashboard";
+    ViewData["Breadcrumb"] = "<span>Dashboard</span>";
+}
+
+<div class="mc-page-header">
+    <div>
+        <h1 class="mc-page-title"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h1>
+        <p class="mc-page-subtitle">Überblick Ihrer Kontaktdatenbank</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-controller="Companies" asp-action="Create" class="btn-mc-primary">
+            <i class="bi bi-plus-lg"></i> Neue Firma
+        </a>
+        <a asp-controller="Contacts" asp-action="Create" class="btn-mc-outline">
+            <i class="bi bi-person-plus"></i> Neuer Kontakt
+        </a>
+    </div>
+</div>
+
+<!-- KPI-Kacheln -->
+<div class="mc-kpi-grid">
+    <div class="mc-kpi-card">
+        <div class="mc-kpi-icon blue"><i class="bi bi-buildings"></i></div>
+        <div class="mc-kpi-label">Firmen gesamt</div>
+        <a asp-controller="Companies" asp-action="Index" class="mc-kpi-value text-decoration-none" style="color:var(--mc-text);">
+            @Model.TotalCompanies.ToString("N0")
+        </a>
+    </div>
+    <div class="mc-kpi-card">
+        <div class="mc-kpi-icon green"><i class="bi bi-people"></i></div>
+        <div class="mc-kpi-label">Kontakte gesamt</div>
+        <a asp-controller="Contacts" asp-action="Index" class="mc-kpi-value text-decoration-none" style="color:var(--mc-text);">
+            @Model.TotalContacts.ToString("N0")
+        </a>
+    </div>
+    <div class="mc-kpi-card">
+        <div class="mc-kpi-icon gold"><i class="bi bi-envelope-at"></i></div>
+        <div class="mc-kpi-label">Mit E-Mail</div>
+        <div class="mc-kpi-value" style="font-size:1.3rem;">@Model.ContactsWithEmail.ToString("N0")</div>
+        <div class="mc-kpi-sub">Kontakte</div>
+    </div>
+    <div class="mc-kpi-card">
+        <div class="mc-kpi-icon navy"><i class="bi bi-telephone"></i></div>
+        <div class="mc-kpi-label">Mit Telefon</div>
+        <div class="mc-kpi-value" style="font-size:1.3rem;">@Model.ContactsWithPhone.ToString("N0")</div>
+        <div class="mc-kpi-sub">Kontakte</div>
+    </div>
+    <div class="mc-kpi-card">
+        <div class="mc-kpi-icon purple"><i class="bi bi-star-fill"></i></div>
+        <div class="mc-kpi-label">Favoriten</div>
+        <div class="mc-kpi-value" style="font-size:1.1rem;">@Model.FavoriteCompanies F · @Model.FavoriteContacts K</div>
+        <div class="mc-kpi-sub">Firmen · Kontakte</div>
+    </div>
+</div>
+
+<!-- Globale Suche -->
+<div class="mc-card mb-4">
+    <div class="mc-card-body">
+        <form asp-controller="Search" asp-action="Index" method="get" class="d-flex gap-2">
+            <input type="text" name="q" class="form-control"
+                   placeholder="Firma, Nachname, E-Mail, Telefon, Ort …"
+                   style="font-size:0.9rem;" />
+            <button type="submit" class="btn-mc-primary" style="white-space:nowrap;">
+                <i class="bi bi-search me-1"></i> Suchen
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Zuletzt geänderte Firmen -->
+    <div class="col-lg-6">
+        <div class="mc-card h-100">
+            <div class="mc-card-header">
+                <h2 class="mc-card-title"><i class="bi bi-buildings"></i> Zuletzt geändert</h2>
+                <a asp-controller="Companies" asp-action="Index" class="btn-mc-ghost" style="font-size:0.78rem;">Alle Firmen</a>
+            </div>
+            @if (!Model.RecentCompanies.Any())
+            {
+                <div class="mc-card-body text-muted text-center py-4">
+                    <i class="bi bi-buildings fs-2 d-block mb-2 opacity-25"></i>
+                    Noch keine Firmen vorhanden.
+                    @if (Model.TotalCompanies == 0)
+                    {
+                        <div class="mt-3">
+                            <form asp-action="Import" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-mc-primary">
+                                    <i class="bi bi-cloud-upload me-1"></i> JSON importieren
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="mc-card-body" style="padding:0;">
+                    <table class="mc-table">
+                        <tbody>
+                        @foreach (var c in Model.RecentCompanies)
+                        {
+                            <tr>
+                                <td>
+                                    <a asp-controller="Companies" asp-action="Details" asp-route-id="@c.Id"
+                                       class="fw-semibold text-decoration-none" style="color:var(--mc-text);">
+                                        @c.Name
+                                    </a>
+                                    <div class="small text-muted">
+                                        @(string.Join(" · ", new[] { c.City, c.Country }.Where(x => !string.IsNullOrWhiteSpace(x))))
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <span class="mc-badge badge-secondary">@c.ContactCount Kontakte</span>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Zuletzt geänderte Kontakte -->
+    <div class="col-lg-6">
+        <div class="mc-card h-100">
+            <div class="mc-card-header">
+                <h2 class="mc-card-title"><i class="bi bi-people"></i> Zuletzt geändert</h2>
+                <a asp-controller="Contacts" asp-action="Index" class="btn-mc-ghost" style="font-size:0.78rem;">Alle Kontakte</a>
+            </div>
+            @if (!Model.RecentContacts.Any())
+            {
+                <div class="mc-card-body text-muted text-center py-4">
+                    <i class="bi bi-people fs-2 d-block mb-2 opacity-25"></i>
+                    Noch keine Kontakte vorhanden.
+                </div>
+            }
+            else
+            {
+                <div class="mc-card-body" style="padding:0;">
+                    <table class="mc-table">
+                        <tbody>
+                        @foreach (var c in Model.RecentContacts)
+                        {
+                            <tr>
+                                <td>
+                                    <a asp-controller="Contacts" asp-action="Details" asp-route-id="@c.Id"
+                                       class="fw-semibold text-decoration-none" style="color:var(--mc-text);">
+                                        @c.DisplayName
+                                    </a>
+                                    @if (c.Company != null)
+                                    {
+                                        <div class="small text-muted">@c.Company.Name</div>
+                                    }
+                                </td>
+                                <td class="text-end" style="white-space:nowrap;">
+                                    @if (!string.IsNullOrEmpty(c.Email))
+                                    {
+                                        <a href="mailto:@c.Email" class="text-muted me-2" title="E-Mail senden: @c.Email">
+                                            <i class="bi bi-envelope"></i>
+                                        </a>
+                                    }
+                                    @if (!string.IsNullOrEmpty(c.Phone))
+                                    {
+                                        <a href="tel:@c.Phone" class="text-muted" title="@c.Phone">
+                                            <i class="bi bi-telephone"></i>
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.FavoriteCompaniesList.Any())
+{
+    <div class="mc-card mt-4">
+        <div class="mc-card-header">
+            <h2 class="mc-card-title"><i class="bi bi-star-fill" style="color:#c0a030;"></i> Favorisierte Firmen</h2>
+        </div>
+        <div class="mc-card-body">
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var c in Model.FavoriteCompaniesList)
+                {
+                    <a asp-controller="Companies" asp-action="Details" asp-route-id="@c.Id"
+                       class="mc-badge badge-warning text-decoration-none" style="font-size:0.82rem; padding:0.4rem 0.9rem;">
+                        <i class="bi bi-buildings me-1"></i>@c.Name
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.TotalCompanies == 0)
+{
+    <div class="mc-card mt-4">
+        <div class="mc-card-header">
+            <h2 class="mc-card-title"><i class="bi bi-cloud-upload"></i> Daten importieren</h2>
+        </div>
+        <div class="mc-card-body">
+            <p class="text-muted mb-3">
+                Die Datenbank ist leer. Importieren Sie jetzt die Kontakte aus <code>Kontakte_MB.json</code>:
+            </p>
+            <form asp-action="Import" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-mc-primary">
+                    <i class="bi bi-cloud-upload me-1"></i> Jetzt importieren (674 Firmen)
+                </button>
+            </form>
+        </div>
+    </div>
+}

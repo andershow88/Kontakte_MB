@@ -1,0 +1,50 @@
+@model KontakteDB.Models.Contact
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Kontakt löschen";
+    ViewData["Breadcrumb"] = $"<a href='/Contacts'>Kontakte</a> <span class='mx-1 text-muted'>/</span> <a href='/Contacts/Details/{Model.Id}'>{Model.DisplayName}</a> <span class='mx-1 text-muted'>/</span> <span>Löschen</span>";
+}
+
+<div class="mc-page-header">
+    <div>
+        <h1 class="mc-page-title"><i class="bi bi-trash me-2"></i>Kontakt löschen</h1>
+    </div>
+</div>
+
+<div class="mc-card" style="max-width:560px;">
+    <div class="mc-card-body">
+        <div class="alert alert-danger mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Achtung:</strong> Diese Aktion kann nicht rückgängig gemacht werden.
+        </div>
+
+        <p class="mb-1">Möchten Sie den folgenden Kontakt wirklich löschen?</p>
+        <div class="mc-card mt-3 mb-4" style="background:var(--mc-bg-alt);">
+            <div class="mc-card-body">
+                <div class="fw-semibold fs-6">@Model.DisplayName</div>
+                @if (!string.IsNullOrEmpty(Model.Position))
+                {
+                    <div class="small text-muted">@Model.Position</div>
+                }
+                @if (Model.Company != null)
+                {
+                    <div class="small text-muted mt-1"><i class="bi bi-buildings me-1"></i>@Model.Company.Name</div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Email))
+                {
+                    <div class="small text-muted mt-1"><i class="bi bi-envelope me-1"></i>@Model.Email</div>
+                }
+            </div>
+        </div>
+
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i> Endgültig löschen
+                </button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn-mc-ghost">Abbrechen</a>
+            </div>
+        </form>
+    </div>
+</div>
