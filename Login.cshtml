@@ -1,0 +1,83 @@
+@model LoginViewModel
+@{
+    Layout = "_LoginLayout";
+    ViewData["Title"] = "Anmelden";
+}
+
+<div class="mc-login-wrapper">
+        <div class="mc-login-card">
+            <div class="mc-login-logo">
+                <img src="~/images/merkur-logo.svg" alt="Merkur Privatbank KGaA" class="mc-login-logo-img" />
+                <div class="mc-login-title">MerkurConnectPortal</div>
+                <div class="mc-login-subtitle">MERKUR PRIVATBANK KGaA</div>
+            </div>
+
+            <form asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="ReturnUrl" />
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger py-2 mb-3" style="font-size:0.82rem;">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        @Html.ValidationSummary(true)
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <label asp-for="Benutzername" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0" style="border:1.5px solid #d1d9e6; border-right:none;">
+                            <i class="bi bi-person text-muted"></i>
+                        </span>
+                        <input asp-for="Benutzername"
+                               class="form-control border-start-0"
+                               placeholder="Ihr Benutzername"
+                               autocomplete="username"
+                               style="border:1.5px solid #d1d9e6; border-left:none;" />
+                    </div>
+                    <span asp-validation-for="Benutzername" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Passwort" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0" style="border:1.5px solid #d1d9e6; border-right:none;">
+                            <i class="bi bi-lock text-muted"></i>
+                        </span>
+                        <input asp-for="Passwort"
+                               class="form-control border-start-0"
+                               placeholder="Ihr Passwort"
+                               autocomplete="current-password"
+                               style="border:1.5px solid #d1d9e6; border-left:none;" />
+                    </div>
+                    <span asp-validation-for="Passwort" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" class="mc-login-btn">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Anmelden
+                </button>
+            </form>
+
+            <div class="mc-login-demo-box mt-3">
+                <div class="fw-semibold mb-1" style="color:#162d5a;font-size:0.78rem;">Demo-Zugangsdaten</div>
+                <div class="mb-1">
+                    <strong>Volksbank Rheinland:</strong><br />
+                    Benutzer: <code>volksbank.rheinland</code> | Passwort: <code>Demo1234!</code>
+                </div>
+                <div>
+                    <strong>Sparkasse Westfalen-Lippe:</strong><br />
+                    Benutzer: <code>sparkasse.wl</code> | Passwort: <code>Demo1234!</code>
+                </div>
+            </div>
+
+            <div class="text-center mt-3" style="font-size:0.72rem; color:#9aa3b8;">
+                <i class="bi bi-shield-lock me-1"></i>
+                Gesicherter Zugang · Nur für autorisierte Partnerbanken
+            </div>
+        </div>
+
+        <div class="text-center mt-3" style="font-size:0.72rem; color:rgba(255,255,255,0.4);">
+            &copy; @DateTime.Now.Year Merkur Privatbank KGaA – Alle Rechte vorbehalten
+        </div>
+</div>
