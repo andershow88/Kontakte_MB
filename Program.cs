@@ -3,6 +3,7 @@ using KontakteDB.Data;
 using KontakteDB.Models;
 using KontakteDB.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,14 +49,21 @@ if (!string.IsNullOrEmpty(port))
 
 var app = builder.Build();
 
+// ── Forwarded Headers (Railway / jeder Reverse Proxy) ────────────────────────
+// Damit erkennt ASP.NET Core das echte Schema (https) und die echte Client-IP.
+// Ohne dies schlägt die Antiforgery-Validierung fehl → HTTP 500 beim Login-POST.
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 // ── Middleware ────────────────────────────────────────────────────────────────
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // HSTS und HTTPS-Redirect deaktiviert: Railway terminiert TLS am Proxy
 }
 
-// app.UseHttpsRedirection(); // nicht auf Railway (TLS-Terminierung am Reverse Proxy)
+// HTTPS-Redirect deaktiviert: Railway terminiert TLS am eigenen Proxy
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
