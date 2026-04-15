@@ -559,7 +559,7 @@ The application includes a one-click import feature that loads data from `Kontak
 | Total unique records | 1,492 |
 | Duplicates removed | 146 |
 
-**To import:** Log in and click the **Import** button on the dashboard. The import is idempotent — it adds new records each time it runs.
+**To import:** Log in and click the **Import** button on the dashboard. Note that the import **adds new records** each time it runs — it does not detect or skip duplicates, so avoid running it multiple times on the same dataset.
 
 ---
 
