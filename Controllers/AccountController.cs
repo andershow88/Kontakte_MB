@@ -58,7 +58,7 @@ public class AccountController : Controller
         await HttpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             principal,
-            new AuthenticationProperties { IsPersistent = true });
+            new AuthenticationProperties { IsPersistent = model.MerkenAuf });
 
         var returnUrl = model.ReturnUrl;
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))

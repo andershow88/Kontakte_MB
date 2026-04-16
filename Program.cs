@@ -41,6 +41,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // ── Services ──────────────────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<ImportService>();
+builder.Services.AddHttpClient();
 
 // ── Railway / Cloud: PORT-Umgebungsvariable respektieren ─────────────────────
 var port = Environment.GetEnvironmentVariable("PORT");

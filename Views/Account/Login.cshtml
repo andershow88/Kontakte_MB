@@ -1,74 +1,112 @@
 @model KontakteDB.ViewModels.LoginViewModel
 @{
-    Layout = "_LoginLayout";
+    Layout = null;
     ViewData["Title"] = "Anmelden";
 }
+<!DOCTYPE html>
+<html lang="de" data-theme="light" id="loginHtml">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KontakteDB – Anmelden</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/merkur.css" asp-append-version="true" />
+</head>
+<body class="mc-login-body">
 
 <div class="mc-login-wrapper">
     <div class="mc-login-card">
+
+        <!-- Logo -->
         <div class="mc-login-logo">
             <img src="~/images/merkur-logo.svg" alt="Merkur Privatbank KGaA" class="mc-login-logo-img" />
             <div class="mc-login-title">KontakteDB</div>
             <div class="mc-login-subtitle">MERKUR PRIVATBANK KGaA</div>
         </div>
 
+        <hr class="mc-login-divider" />
+
+        <!-- Formular -->
         <form asp-action="Login" method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="ReturnUrl" />
 
-            @if (!ViewData.ModelState.IsValid)
+            @if (!ViewContext.ModelState.IsValid)
             {
-                <div class="alert alert-danger py-2 mb-3" style="font-size:0.82rem;">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                    @Html.ValidationSummary(true)
+                <div class="alert alert-danger py-2 small mb-3">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    <span asp-validation-summary="All"></span>
                 </div>
             }
 
             <div class="mb-3">
                 <label asp-for="Benutzername" class="form-label"></label>
                 <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0" style="border:1.5px solid #d5d5d5; border-right:none;">
-                        <i class="bi bi-person text-muted"></i>
-                    </span>
-                    <input asp-for="Benutzername"
-                           class="form-control border-start-0"
-                           placeholder="Ihr Benutzername"
-                           autocomplete="username"
-                           style="border:1.5px solid #d5d5d5; border-left:none;" />
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input asp-for="Benutzername" class="form-control" placeholder="Benutzername"
+                           autofocus autocomplete="username" />
                 </div>
                 <span asp-validation-for="Benutzername" class="text-danger small"></span>
             </div>
 
-            <div class="mb-4">
+            <div class="mb-3">
                 <label asp-for="Passwort" class="form-label"></label>
                 <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0" style="border:1.5px solid #d5d5d5; border-right:none;">
-                        <i class="bi bi-lock text-muted"></i>
-                    </span>
-                    <input asp-for="Passwort"
-                           class="form-control border-start-0"
-                           placeholder="Ihr Passwort"
-                           autocomplete="current-password"
-                           style="border:1.5px solid #d5d5d5; border-left:none;" />
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input asp-for="Passwort" class="form-control" placeholder="Passwort"
+                           autocomplete="current-password" />
                 </div>
                 <span asp-validation-for="Passwort" class="text-danger small"></span>
             </div>
 
+            <div class="mb-4 form-check">
+                <input asp-for="MerkenAuf" class="form-check-input" />
+                <label asp-for="MerkenAuf" class="form-check-label small"></label>
+            </div>
+
             <button type="submit" class="mc-login-btn">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Anmelden
+                <i class="bi bi-box-arrow-in-right me-1"></i> Anmelden
             </button>
         </form>
 
-        <div class="mc-login-demo-box mt-3">
-            <div class="fw-semibold mb-1" style="font-size:0.78rem;">Zugangsdaten</div>
-            <div>
-                Benutzer: <code>admin</code> &nbsp;|&nbsp; Passwort: <code>Admin1234!</code>
+        <!-- Demo-Zugänge (versteckt, Zauberwort MERKUR zum Aufdecken) -->
+        <div class="mc-login-demo-box mt-3" style="padding:0;">
+            <div class="mc-login-demo-box-header" style="justify-content:space-between;">
+                <span><i class="bi bi-shield-lock"></i> Demo-Zugänge</span>
+                <span style="font-size:.68rem; opacity:.7; font-weight:400; text-transform:none; letter-spacing:0;">
+                    Zauberwort eingeben
+                </span>
             </div>
-        </div>
-
-        <div class="text-center mt-3" style="font-size:0.72rem; color:#9aa3b8;">
-            <i class="bi bi-shield-lock me-1"></i>
-            Gesicherter Zugang · Nur für autorisierte Benutzer
+            <!-- Zauberwort-Eingabe -->
+            <div style="padding:.6rem 1rem; border-bottom:1px solid var(--mc-border);">
+                <input id="zauberwortInput" type="password" placeholder="••••••"
+                       autocomplete="off"
+                       oninput="pruefZauberwort(this.value)"
+                       style="width:100%; border:1px solid var(--mc-border); border-radius:8px;
+                              padding:.4rem .75rem; font-size:.85rem; background:var(--mc-bg);
+                              color:var(--mc-text); outline:none; font-family:monospace;
+                              letter-spacing:.15em; transition:border-color .2s;"
+                       onfocus="this.style.borderColor='var(--mc-gold)'"
+                       onblur="this.style.borderColor='var(--mc-border)'" />
+            </div>
+            <!-- Grid (zunächst versteckt) -->
+            <div id="demoGrid" style="display:none; overflow:hidden;">
+                <div class="mc-login-demo-grid">
+                    <div class="mc-login-demo-entry" onclick="demoLogin('admin','Admin1234!')" style="cursor:pointer;" title="Klicken zum Anmelden">
+                        <div class="mc-login-demo-role">Administrator</div>
+                        <div class="mc-login-demo-creds">
+                            <span>admin</span>
+                            <span>Admin1234!</span>
+                        </div>
+                    </div>
+                    <div class="mc-login-demo-entry" style="display:flex; align-items:center; justify-content:center; color:var(--mc-text-muted); font-size:0.72rem; text-align:center; padding:.7rem 1rem;">
+                        <div><i class="bi bi-cursor" style="font-size:1.1rem; display:block; margin-bottom:.25rem; opacity:.4;"></i>Eintrag anklicken<br>zum Übernehmen</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -77,6 +115,59 @@
     </div>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+<!-- Dark-Mode-Toggle (oben rechts) -->
+<button id="loginThemeToggle" onclick="loginThemeToggle()" title="Dark Mode umschalten"
+        style="position:fixed; top:1rem; right:1rem; background:var(--mc-surface);
+               border:1px solid var(--mc-border); border-radius:50%; width:38px; height:38px;
+               display:flex; align-items:center; justify-content:center;
+               cursor:pointer; color:var(--mc-text-muted); font-size:1rem;
+               box-shadow:0 2px 8px rgba(0,0,0,.12); transition:all .2s; z-index:100;">
+    <i class="bi bi-moon-stars-fill" id="loginThemeIcon"></i>
+</button>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+<script>
+    (function () {
+        const stored = localStorage.getItem('mc-theme') || 'light';
+        document.getElementById('loginHtml').setAttribute('data-theme', stored);
+        updateLoginIcon(stored);
+    })();
+
+    function loginThemeToggle() {
+        const html = document.getElementById('loginHtml');
+        const current = html.getAttribute('data-theme') || 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('mc-theme', next);
+        updateLoginIcon(next);
+    }
+
+    function updateLoginIcon(theme) {
+        const icon = document.getElementById('loginThemeIcon');
+        if (icon) icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+    }
+
+    function pruefZauberwort(val) {
+        const grid = document.getElementById('demoGrid');
+        const input = document.getElementById('zauberwortInput');
+        if (val.toUpperCase() === 'MERKUR') {
+            grid.style.display = 'block';
+            input.style.borderColor = 'var(--mc-gold)';
+            input.blur();
+        } else {
+            grid.style.display = 'none';
+            input.style.borderColor = 'var(--mc-border)';
+        }
+    }
+
+    function demoLogin(user, pass) {
+        document.getElementById('Benutzername').value = user;
+        document.getElementById('Passwort').value = pass;
+        document.querySelector('form').submit();
+    }
+</script>
+</body>
+</html>

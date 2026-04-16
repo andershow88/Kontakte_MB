@@ -13,5 +13,8 @@ public class LoginViewModel
     [Display(Name = "Passwort")]
     public string Passwort { get; set; } = string.Empty;
 
+    [Display(Name = "Angemeldet bleiben")]
+    public bool MerkenAuf { get; set; }
+
     public string? ReturnUrl { get; set; }
 }
