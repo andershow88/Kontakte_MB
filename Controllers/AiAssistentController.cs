@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using KontakteDB.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -146,40 +147,146 @@ public class AiAssistentController : Controller
         sb.AppendLine($"- Kontakte: {kontakteAnzahl} (davon Favoriten: {favoritenKontakte})");
         sb.AppendLine();
 
+        // ── Stopwörter für die Volltextsuche ─────────────────────────────────
+        var stoppwoerter = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "wer","was","wie","wo","wann","warum","welche","welcher","welches",
+            "ist","sind","hat","hatte","haben","war","wird","kann",
+            "der","die","das","den","dem","des","ein","eine","einer","einen",
+            "und","oder","aber","auch","noch","nur","mit","von","zu","zur","zum",
+            "im","in","am","an","auf","aus","bei","bis","für","über","unter",
+            "mir","mich","dir","dich","uns","euch","sich","ihr","ihn",
+            "zeig","zeige","zeigen","liste","listen","finde","findet","finden",
+            "such","suche","suchen","gib","gibt","geb","nenn","nenne","nennen",
+            "mal","bitte","jetzt","doch","noch","schon","sehr","ganz","alle",
+            "kontakt","kontakte","kontakts","firma","firmen","person","personen",
+            "ansprechpartner","mitarbeiter","unternehmen","company","name","namen",
+            "telefon","telefonnummer","mobil","handy","mail","email","e-mail",
+            "adresse","anschrift","straße","ort","stadt","plz","land","position",
+            "abteilung","branche","favorit","favoriten","website","notiz","notizen"
+        };
+
+        // Suchbegriffe aus Frage extrahieren (Wörter > 2 Zeichen, keine Stopwörter)
+        var suchBegriffe = Regex.Matches(frage, @"[\p{L}][\p{L}\-]{2,}")
+            .Select(m => m.Value)
+            .Where(w => !stoppwoerter.Contains(w))
+            .Distinct()
+            .Take(5)
+            .ToList();
+
+        // E-Mail- und Telefon-Muster direkt extrahieren
+        var emailMatch = Regex.Match(frage, @"[\w\.\-]+@[\w\.\-]+\.\w{2,}");
+        var phoneMatch = Regex.Match(frage, @"\+?\d[\d\s\-\/\(\)]{6,}\d");
+
         bool sucheFirmen = frageLower.Contains("firma") || frageLower.Contains("firmen")
             || frageLower.Contains("unternehmen") || frageLower.Contains("company");
         bool sucheKontakte = frageLower.Contains("kontakt") || frageLower.Contains("person")
-            || frageLower.Contains("ansprechpartner") || frageLower.Contains("mitarbeiter");
+            || frageLower.Contains("ansprechpartner") || frageLower.Contains("mitarbeiter")
+            || frageLower.Contains("telefon") || frageLower.Contains("mobil")
+            || frageLower.Contains("mail") || frageLower.Contains("e-mail");
         bool sucheListe = frageLower.Contains("liste") || frageLower.Contains("zeig")
-            || frageLower.Contains("such") || frageLower.Contains("aktuell")
+            || frageLower.Contains("aktuell")
             || frageLower.Contains("neueste") || frageLower.Contains("letzte");
         bool sucheFavoriten = frageLower.Contains("favorit");
         bool sucheBranche = frageLower.Contains("branche");
-        bool sucheOrt = frageLower.Contains("ort") || frageLower.Contains("stadt")
-            || frageLower.Contains("plz");
 
-        // ── Firmen auflisten ─────────────────────────────────────────────────
-        if (sucheFirmen || (sucheListe && !sucheKontakte) || sucheBranche || sucheOrt)
+        // ── Gezielte Suche über extrahierte Begriffe ─────────────────────────
+        bool trefferGefunden = false;
+
+        if (suchBegriffe.Any() || emailMatch.Success || phoneMatch.Success)
+        {
+            foreach (var begriff in suchBegriffe.Concat(new[] {
+                emailMatch.Success ? emailMatch.Value : null,
+                phoneMatch.Success ? phoneMatch.Value.Replace(" ", "").Replace("-", "").Replace("/", "") : null
+            }).Where(b => !string.IsNullOrEmpty(b)).Take(5))
+            {
+                var term = begriff!;
+
+                // Kontakt-Treffer (Name, E-Mail, Telefon, Mobil, Position, Notizen)
+                var kontaktTreffer = await _db.Contacts
+                    .Include(c => c.Company)
+                    .Where(c =>
+                        c.LastName.Contains(term) ||
+                        (c.FirstName != null && c.FirstName.Contains(term)) ||
+                        (c.Email != null && c.Email.Contains(term)) ||
+                        (c.Phone != null && c.Phone.Contains(term)) ||
+                        (c.Mobile != null && c.Mobile.Contains(term)) ||
+                        (c.Position != null && c.Position.Contains(term)) ||
+                        (c.Department != null && c.Department.Contains(term)) ||
+                        (c.Notes != null && c.Notes.Contains(term)))
+                    .OrderBy(c => c.LastName)
+                    .Take(8)
+                    .ToListAsync();
+
+                // Firmen-Treffer (Name, Ort, Branche, Mail, Telefon, Notizen)
+                var firmenTreffer = await _db.Companies
+                    .Where(c =>
+                        c.Name.Contains(term) ||
+                        (c.City != null && c.City.Contains(term)) ||
+                        (c.Industry != null && c.Industry.Contains(term)) ||
+                        (c.Email != null && c.Email.Contains(term)) ||
+                        (c.Phone != null && c.Phone.Contains(term)) ||
+                        (c.Notes != null && c.Notes.Contains(term)))
+                    .OrderBy(c => c.Name)
+                    .Take(8)
+                    .ToListAsync();
+
+                if (kontaktTreffer.Any() || firmenTreffer.Any())
+                {
+                    trefferGefunden = true;
+                    sb.AppendLine($"**Treffer für \"{term}\":**");
+
+                    foreach (var k in kontaktTreffer)
+                    {
+                        var fav = k.IsFavorite ? "★ " : "";
+                        sb.AppendLine($"- {fav}**{k.DisplayName}**"
+                            + (k.Position != null ? $" – {k.Position}" : "")
+                            + (k.Company != null ? $" @ {k.Company.Name}" : "")
+                            + (k.Department != null ? $" ({k.Department})" : ""));
+                        if (!string.IsNullOrWhiteSpace(k.Email))  sb.AppendLine($"  📧 {k.Email}");
+                        if (!string.IsNullOrWhiteSpace(k.Phone))   sb.AppendLine($"  ☎ Telefon: {k.Phone}");
+                        if (!string.IsNullOrWhiteSpace(k.Mobile))  sb.AppendLine($"  📱 Mobil: {k.Mobile}");
+                        if (!string.IsNullOrWhiteSpace(k.Fax))     sb.AppendLine($"  📠 Fax: {k.Fax}");
+                        var adr = k.FullAddress;
+                        if (!string.IsNullOrWhiteSpace(adr))       sb.AppendLine($"  📍 {adr}");
+                    }
+
+                    foreach (var f in firmenTreffer)
+                    {
+                        var fav = f.IsFavorite ? "★ " : "";
+                        sb.AppendLine($"- {fav}**{f.Name}** (Firma)"
+                            + (f.Industry != null ? $" – {f.Industry}" : ""));
+                        if (!string.IsNullOrWhiteSpace(f.Email))   sb.AppendLine($"  📧 {f.Email}");
+                        if (!string.IsNullOrWhiteSpace(f.Phone))   sb.AppendLine($"  ☎ {f.Phone}");
+                        if (!string.IsNullOrWhiteSpace(f.Website)) sb.AppendLine($"  🌐 {f.Website}");
+                        var adr = f.FullAddress;
+                        if (!string.IsNullOrWhiteSpace(adr))       sb.AppendLine($"  📍 {adr}");
+                    }
+                    sb.AppendLine();
+                }
+            }
+        }
+
+        // ── Fallback: aktuelle Listen bei generischen Fragen ─────────────────
+        if (!trefferGefunden && (sucheFirmen || (sucheListe && !sucheKontakte)))
         {
             var firmen = await _db.Companies
                 .OrderByDescending(c => c.UpdatedAt)
                 .Take(15)
-                .Select(c => new { c.Name, c.City, c.Country, c.Industry, c.Email, c.Phone, c.IsFavorite, c.UpdatedAt })
                 .ToListAsync();
 
             sb.AppendLine("**Firmen (zuletzt geändert, max. 15):**");
             foreach (var f in firmen)
             {
+                var fav = f.IsFavorite ? "★ " : "";
                 var ort = !string.IsNullOrWhiteSpace(f.City) ? f.City : "–";
                 var branche = !string.IsNullOrWhiteSpace(f.Industry) ? f.Industry : "–";
-                var fav = f.IsFavorite ? "★ " : "";
-                sb.AppendLine($"- {fav}{f.Name} | Ort: {ort} | Branche: {branche} | Geändert: {f.UpdatedAt:dd.MM.yyyy}");
+                sb.AppendLine($"- {fav}{f.Name} | Ort: {ort} | Branche: {branche} | Tel: {f.Phone ?? "–"}");
             }
             sb.AppendLine();
         }
 
-        // ── Kontakte auflisten ───────────────────────────────────────────────
-        if (sucheKontakte || (sucheListe && !sucheFirmen))
+        if (!trefferGefunden && (sucheKontakte || (sucheListe && !sucheFirmen)))
         {
             var kontakte = await _db.Contacts
                 .Include(c => c.Company)
@@ -190,10 +297,11 @@ public class AiAssistentController : Controller
             sb.AppendLine("**Kontakte (zuletzt geändert, max. 15):**");
             foreach (var k in kontakte)
             {
-                var firma = k.Company?.Name ?? "–";
-                var pos = !string.IsNullOrWhiteSpace(k.Position) ? k.Position : "–";
                 var fav = k.IsFavorite ? "★ " : "";
-                sb.AppendLine($"- {fav}{k.DisplayName} | Firma: {firma} | Position: {pos} | E-Mail: {k.Email ?? "–"}");
+                sb.AppendLine($"- {fav}{k.DisplayName}"
+                    + (k.Company != null ? $" @ {k.Company.Name}" : "")
+                    + (k.Position != null ? $" – {k.Position}" : "")
+                    + $" | Tel: {k.Phone ?? k.Mobile ?? "–"} | E-Mail: {k.Email ?? "–"}");
             }
             sb.AppendLine();
         }
@@ -205,7 +313,6 @@ public class AiAssistentController : Controller
                 .Where(c => c.IsFavorite)
                 .OrderBy(c => c.Name)
                 .Take(20)
-                .Select(c => new { c.Name, c.City, c.Industry })
                 .ToListAsync();
 
             var favKontakte = await _db.Contacts
@@ -219,7 +326,7 @@ public class AiAssistentController : Controller
             {
                 sb.AppendLine("**Favorisierte Firmen:**");
                 foreach (var f in favFirmen)
-                    sb.AppendLine($"- {f.Name} ({f.City ?? "–"}, {f.Industry ?? "–"})");
+                    sb.AppendLine($"- {f.Name} ({f.City ?? "–"}, {f.Industry ?? "–"}) | Tel: {f.Phone ?? "–"}");
                 sb.AppendLine();
             }
 
@@ -227,7 +334,7 @@ public class AiAssistentController : Controller
             {
                 sb.AppendLine("**Favorisierte Kontakte:**");
                 foreach (var k in favKontakte)
-                    sb.AppendLine($"- {k.DisplayName} ({k.Company?.Name ?? "–"})");
+                    sb.AppendLine($"- {k.DisplayName} ({k.Company?.Name ?? "–"}) | Tel: {k.Phone ?? k.Mobile ?? "–"} | E-Mail: {k.Email ?? "–"}");
                 sb.AppendLine();
             }
         }
