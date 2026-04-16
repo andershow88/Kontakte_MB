@@ -41,11 +41,99 @@
 
 /* ── Tabellen im Dark Mode ──────────────────────────────────────────────────── */
 [data-theme="dark"] .table {
+    --bs-table-bg:           transparent;
+    --bs-table-color:        var(--mc-text);
+    --bs-table-color-state:  var(--mc-text);
+    --bs-table-border-color: var(--mc-border);
+    --bs-table-striped-bg:   #181828;
+    --bs-table-hover-bg:     #1c1c30;
     color: var(--mc-text);
+    background-color: transparent;
 }
 [data-theme="dark"] .table td,
 [data-theme="dark"] .table th {
     border-color: var(--mc-border);
+    color: var(--mc-text);
+    background-color: transparent;
+}
+[data-theme="dark"] .table .text-muted,
+[data-theme="dark"] .text-muted {
+    color: var(--mc-text-muted) !important;
+}
+
+/* ── Horizontale Trennlinien ───────────────────────────────────────────────── */
+[data-theme="dark"] hr {
+    border-color: var(--mc-border);
+    color: var(--mc-border);
+}
+
+/* ── Code-Inline (z.B. Zugangsdaten) ───────────────────────────────────────── */
+[data-theme="dark"] code {
+    background: #252538;
+    color: #d4b070;
+    padding: 0.05em 0.35em;
+    border-radius: 4px;
+}
+
+/* ── Modals ─────────────────────────────────────────────────────────────────── */
+[data-theme="dark"] .modal-content {
+    background: var(--mc-bg-card);
+    color: var(--mc-text);
+    border-color: var(--mc-border);
+}
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+    border-color: var(--mc-border);
+}
+
+/* ── List-Group (falls Bootstrap) ──────────────────────────────────────────── */
+[data-theme="dark"] .list-group-item {
+    background: var(--mc-bg-card);
+    color: var(--mc-text);
+    border-color: var(--mc-border);
+}
+
+/* ── Dropdown (Bootstrap) ──────────────────────────────────────────────────── */
+[data-theme="dark"] .dropdown-menu {
+    background: var(--mc-bg-card);
+    border-color: var(--mc-border);
+    color: var(--mc-text);
+}
+[data-theme="dark"] .dropdown-item {
+    color: var(--mc-text);
+}
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] .dropdown-item:focus {
+    background: #252538;
+    color: var(--mc-text);
+}
+
+/* ── Bootstrap bg-*/text-* Utilities im Dark Mode ──────────────────────────── */
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-light {
+    background-color: var(--mc-bg-card) !important;
+    color: var(--mc-text) !important;
+}
+[data-theme="dark"] .text-dark {
+    color: var(--mc-text) !important;
+}
+[data-theme="dark"] .text-body {
+    color: var(--mc-text) !important;
+}
+[data-theme="dark"] .border {
+    border-color: var(--mc-border) !important;
+}
+
+/* ── Form check (Checkboxen) im Dark Mode ──────────────────────────────────── */
+[data-theme="dark"] .form-check-input {
+    background-color: #16162a;
+    border-color: var(--mc-border);
+}
+[data-theme="dark"] .form-check-input:checked {
+    background-color: var(--mc-primary);
+    border-color: var(--mc-primary);
+}
+[data-theme="dark"] .form-check-label {
     color: var(--mc-text);
 }
 

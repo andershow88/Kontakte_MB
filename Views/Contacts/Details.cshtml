@@ -10,7 +10,7 @@
         <h1 class="mc-page-title">
             @if (Model.IsFavorite)
             {
-                <i class="bi bi-star-fill me-2" style="color:#c0a030; font-size:1rem;"></i>
+                <i class="bi bi-star-fill me-2" style="color:var(--mc-gold); font-size:1rem;"></i>
             }
             @Model.DisplayName
         </h1>
@@ -32,7 +32,7 @@
             <button type="submit" class="btn-mc-ghost">
                 @if (Model.IsFavorite)
                 {
-                    <i class="bi bi-star-fill me-1" style="color:#c0a030;"></i> <span>Favorit entfernen</span>
+                    <i class="bi bi-star-fill me-1" style="color:var(--mc-gold);"></i> <span>Favorit entfernen</span>
                 }
                 else
                 {
