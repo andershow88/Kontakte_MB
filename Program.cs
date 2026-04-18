@@ -68,6 +68,25 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
+
+// ── AUTO-LOGIN: Zum Wiederherstellen der Login-Pflicht diese Zeile auskommentieren ──
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated != true)
+    {
+        var claims = new List<System.Security.Claims.Claim>
+        {
+            new(System.Security.Claims.ClaimTypes.NameIdentifier, "1"),
+            new(System.Security.Claims.ClaimTypes.Name, "admin"),
+            new(System.Security.Claims.ClaimTypes.GivenName, "Administrator"),
+            new(System.Security.Claims.ClaimTypes.Role, "Admin")
+        };
+        var identity = new System.Security.Claims.ClaimsIdentity(claims, "Cookies");
+        context.User = new System.Security.Claims.ClaimsPrincipal(identity);
+    }
+    await next();
+});
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
