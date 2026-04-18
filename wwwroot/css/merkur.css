@@ -1,39 +1,48 @@
 /* ============================================================
-   MerkurConnect Portal – Corporate Banking Design
-   Farbpalette: Weiß / Grau (Merkur Privatbank KGaA)
+   MerkurConnect Portal – Merkur Privatbank Corporate Design
+   Petrol #00515A · Gold #C8A96E · Roboto + Open Sans
    ============================================================ */
 
 :root {
-    --mc-primary:      #6b6b6b;
-    --mc-primary-dark: #4a4a4a;
-    --mc-primary-light:#8a8a8a;
+    --mc-primary:      #00515A;
+    --mc-primary-dark: #003d44;
+    --mc-primary-light:#39747A;
     --mc-sidebar-bg:   #ffffff;
-    --mc-sidebar-border: #e0e0e0;
+    --mc-sidebar-border: #DCDCDC;
     --mc-white:        #ffffff;
-    --mc-bg:           #f4f4f4;
+    --mc-bg:           #FFFFFF;
     --mc-bg-card:      #ffffff;
-    --mc-border:       #e0e0e0;
-    --mc-text:         #333333;
-    --mc-text-muted:   #888888;
+    --mc-border:       #DCDCDC;
+    --mc-text:         #6D6D6D;
+    --mc-text-dark:    #333333;
+    --mc-text-muted:   #999999;
     --mc-sidebar-w:    268px;
     --mc-topbar-h:     64px;
-    --mc-shadow:       0 2px 8px rgba(0,0,0,0.08);
-    --mc-shadow-lg:    0 4px 20px rgba(0,0,0,0.12);
-    --mc-radius:       10px;
-    --mc-radius-sm:    6px;
+    --mc-shadow:       0 1px 6px rgba(0,0,0,0.06);
+    --mc-shadow-lg:    0 4px 20px rgba(0,0,0,0.08);
+    --mc-radius:       12px;
+    --mc-radius-sm:    8px;
+    --mc-radius-pill:  30px;
     --mc-surface:      #ffffff;
-    --mc-gold:         #c8a96e;
+    --mc-gold:         #C8A96E;
     --mc-gold-dark:    #a8884e;
+    --mc-success:      #A2AE3C;
+    --mc-danger:       #A70C23;
+    --mc-warning:      #DE6250;
+    --mc-info:         #95D3C2;
+    --mc-petrol:       #00515A;
 }
 
 /* ---- Reset & Base ---- */
 *, *::before, *::after { box-sizing: border-box; }
 
-body { margin: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    font-size: 0.9rem; color: var(--mc-text); }
+body { margin: 0; font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+    font-size: 0.9rem; color: var(--mc-text); background: var(--mc-bg); }
+
+h1, h2, h3, h4, h5, h6 { font-family: 'Roboto', Helvetica, Arial, sans-serif; font-weight: 500; color: var(--mc-text-dark); }
 
 a { color: var(--mc-primary); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a:hover { color: var(--mc-primary-dark); }
 
 /* ============================================================
    LAYOUT – Sidebar + Main
@@ -151,13 +160,13 @@ a:hover { text-decoration: underline; }
 }
 
 .mc-nav-link:hover {
-    background: #f0f0f0;
-    color: var(--mc-text);
+    background: rgba(0,81,90,0.06);
+    color: var(--mc-primary);
 }
 
 .mc-nav-link.active {
-    background: #ebebeb;
-    color: var(--mc-primary-dark);
+    background: rgba(0,81,90,0.08);
+    color: var(--mc-primary);
     font-weight: 600;
     border-left: 3px solid var(--mc-primary);
 }
@@ -522,42 +531,43 @@ a:hover { text-decoration: underline; }
 .mc-filter-bar .form-control:focus,
 .mc-filter-bar .form-select:focus {
     border-color: var(--mc-primary);
-    box-shadow: 0 0 0 3px rgba(107,107,107,0.12);
+    box-shadow: 0 0 0 3px rgba(0,81,90,0.1);
 }
 
 /* ============================================================
    BUTTONS
    ============================================================ */
 .btn-mc-primary {
-    background: var(--mc-primary);
-    color: #ffffff;
-    border: none;
-    padding: 0.5rem 1.25rem;
-    border-radius: var(--mc-radius-sm);
+    background: transparent;
+    color: var(--mc-primary);
+    border: 2px solid var(--mc-primary);
+    padding: 0.5rem 1.5rem;
+    border-radius: var(--mc-radius-pill);
+    font-family: 'Roboto', sans-serif;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
     cursor: pointer;
-    transition: background 0.15s, box-shadow 0.15s;
+    transition: all 0.2s;
     text-decoration: none !important;
 }
 
 .btn-mc-primary:hover {
-    background: var(--mc-primary-dark);
+    background: var(--mc-primary);
     color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 }
 
 .btn-mc-outline {
     background: transparent;
-    color: var(--mc-primary);
-    border: 1.5px solid var(--mc-primary);
+    color: var(--mc-text-dark);
+    border: 2px solid var(--mc-text-dark);
     padding: 0.45rem 1.1rem;
-    border-radius: var(--mc-radius-sm);
+    border-radius: var(--mc-radius-pill);
+    font-family: 'Roboto', sans-serif;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
@@ -734,7 +744,7 @@ a:hover { text-decoration: underline; }
 
 .mc-login-card .form-control:focus {
     border-color: var(--mc-primary);
-    box-shadow: 0 0 0 3px rgba(107,107,107,0.12);
+    box-shadow: 0 0 0 3px rgba(0,81,90,0.1);
 }
 
 .mc-login-btn {
@@ -906,30 +916,34 @@ a:hover { text-decoration: underline; }
    DARK MODE
    ============================================================ */
 [data-theme="dark"] {
-    --mc-primary:       #a0a0b8;
-    --mc-primary-dark:  #c8c8dc;
-    --mc-primary-light: #7a7a90;
-    --mc-sidebar-bg:    #1a1a28;
-    --mc-sidebar-border:#2d2d44;
-    --mc-white:         #1e1e2e;
-    --mc-bg:            #12121e;
-    --mc-bg-card:       #1e1e2e;
-    --mc-border:        #2d2d44;
-    --mc-text:          #e2e2ee;
-    --mc-text-muted:    #8a8aa0;
-    --mc-shadow:        0 2px 8px rgba(0,0,0,0.35);
-    --mc-shadow-lg:     0 4px 20px rgba(0,0,0,0.5);
+    --mc-primary:       #5aabb5;
+    --mc-primary-dark:  #7cc4cc;
+    --mc-primary-light: #3d8a94;
+    --mc-sidebar-bg:    #16161e;
+    --mc-sidebar-border:#2c2c3a;
+    --mc-white:         #1c1c26;
+    --mc-bg:            #111118;
+    --mc-bg-card:       #1c1c26;
+    --mc-border:        #2c2c3a;
+    --mc-text:          #d0d0dc;
+    --mc-text-dark:     #e8e8f0;
+    --mc-text-muted:    #7a7a8a;
+    --mc-shadow:        0 1px 6px rgba(0,0,0,0.3);
+    --mc-shadow-lg:     0 4px 20px rgba(0,0,0,0.4);
+    --mc-petrol:        #5aabb5;
+    --mc-gold:          #d4b47a;
+    --mc-success:       #a8b84a;
+    --mc-danger:        #d05060;
 }
 
 /* Sidebar bank section */
 [data-theme="dark"] .mc-sidebar-bank {
-    background: #161622;
+    background: #141420;
 }
 
-/* Nav hover & active */
 [data-theme="dark"] .mc-nav-link:hover {
-    background: #252538;
-    color: var(--mc-text);
+    background: rgba(90,171,181,0.1);
+    color: var(--mc-primary);
 }
 
 [data-theme="dark"] .mc-nav-link.active {
