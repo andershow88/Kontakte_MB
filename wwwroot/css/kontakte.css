@@ -426,6 +426,68 @@
     border-color: #4a3820;
 }
 
+/* ── Result Filter (Live-Filter innerhalb Ergebnislisten) ─────────────────── */
+.result-filter-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1.5px solid var(--mc-border);
+    border-radius: var(--mc-radius-sm);
+    padding: 0.3rem 0.6rem;
+    background: var(--mc-bg);
+    transition: border-color 0.2s;
+}
+
+.result-filter-wrap:focus-within {
+    border-color: var(--mc-primary);
+}
+
+.result-filter-wrap i {
+    color: var(--mc-text-muted);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.result-filter-input {
+    border: none;
+    background: transparent;
+    color: var(--mc-text);
+    font-size: 0.8rem;
+    outline: none;
+    font-family: inherit;
+    width: 150px;
+    min-width: 0;
+}
+
+.result-filter-input::placeholder {
+    color: var(--mc-text-muted);
+}
+
+.result-filter-count {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--mc-primary);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .result-filter-wrap {
+    border-color: var(--mc-border);
+    background: var(--mc-bg);
+}
+
+[data-theme="dark"] .result-filter-wrap:focus-within {
+    border-color: var(--mc-primary);
+}
+
+[data-theme="dark"] .result-filter-input {
+    color: var(--mc-text);
+}
+
+[data-theme="dark"] .result-filter-input::placeholder {
+    color: var(--mc-text-muted);
+}
+
 /* ── Search Method Tag ────────────────────────────────────────────────────────── */
 .search-method-tag {
     display: inline-block;
