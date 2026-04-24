@@ -2,16 +2,16 @@
    kontakte.css — Kontaktdatenbank supplemental styles
    ============================================================ */
 
-/* ── Ghost-Buttons: im Hellmodus klar sichtbar (grau) ─────────────────────── */
+/* ── Ghost-Buttons: im Hellmodus klar sichtbar ────────────────────────────── */
 .btn-mc-ghost {
-    background: #efefef !important;
-    color: #444 !important;
-    border: 1px solid #c8c8c8 !important;
+    background: #f0f2f5 !important;
+    color: #4a5568 !important;
+    border: 1px solid #dce1e8 !important;
 }
 .btn-mc-ghost:hover {
-    background: #e0e0e0 !important;
-    color: #222 !important;
-    border-color: #b0b0b0 !important;
+    background: #e8ecf2 !important;
+    color: var(--mc-primary) !important;
+    border-color: var(--mc-primary-light) !important;
 }
 
 [data-theme="dark"] .btn-mc-ghost {
@@ -168,14 +168,19 @@
 .mc-filter-bar {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.6rem;
     align-items: center;
     background: var(--mc-bg-card);
     border: 1px solid var(--mc-border);
     border-radius: var(--mc-radius);
-    padding: 0.85rem 1.1rem;
-    margin-bottom: 1.1rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
     box-shadow: var(--mc-shadow);
+    transition: box-shadow var(--mc-transition);
+}
+
+.mc-filter-bar:focus-within {
+    box-shadow: var(--mc-shadow-lg);
 }
 
 /* ── Sidebar overlay (mobile) ───────────────────────────────────────────────── */
@@ -233,14 +238,14 @@
     white-space: nowrap;
 }
 .badge-secondary {
-    background: #ebebeb;
-    color: #555;
-    border: 1px solid #d0d0d0;
+    background: #f0f2f5;
+    color: #5a6a7a;
+    border: 1px solid #dce1e8;
 }
 .badge-warning {
-    background: #fef3cd;
+    background: linear-gradient(135deg, #fef8e8, #fdf0d0);
     color: #7a5c00;
-    border: 1px solid #fce08a;
+    border: 1px solid #f0e4b8;
 }
 [data-theme="dark"] .badge-secondary {
     background: #252535;
