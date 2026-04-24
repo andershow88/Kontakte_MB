@@ -37,6 +37,8 @@ public class SearchController : Controller
                 vm.ScoredCompanies = result.Companies;
                 vm.ScoredContacts = result.Contacts;
                 vm.ElapsedMs = result.ElapsedMs;
+                vm.SearchTokens = result.SearchTokens;
+                vm.ExpandedTokens = result.ExpandedTokens;
                 vm.MaxCompanyScore = result.Companies.Any()
                     ? result.Companies.Max(c => c.Score) : 1;
                 vm.MaxContactScore = result.Contacts.Any()

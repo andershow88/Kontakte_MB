@@ -15,6 +15,8 @@ public class SearchViewModel
     public long ElapsedMs { get; set; }
     public double MaxCompanyScore { get; set; }
     public double MaxContactScore { get; set; }
+    public string[] SearchTokens { get; set; } = Array.Empty<string>();
+    public string[] ExpandedTokens { get; set; } = Array.Empty<string>();
 
     // Legacy flat lists (kept for AI mode compatibility)
     public List<Company> Companies { get; set; } = new();

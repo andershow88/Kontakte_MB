@@ -15,9 +15,19 @@
             <p class="mc-page-subtitle">
                 @Model.TotalResults Ergebnisse für „@Model.Query"
                 <span class="ms-2" style="color:var(--mc-text-muted); font-size:0.78rem;">
-                    <i class="bi bi-lightning-fill me-1"></i>@Model.ElapsedMs ms
+                    <i class="bi bi-lightning-fill me-1"></i>@Model.ElapsedMs ms · BM25 + Synonyme + Fuzzy
                 </span>
             </p>
+            @if (Model.ExpandedTokens.Length > Model.SearchTokens.Length)
+            {
+                <div class="mt-1" style="font-size:0.74rem; color:var(--mc-text-muted);">
+                    <i class="bi bi-diagram-3 me-1"></i>Erweitert:
+                    @foreach (var t in Model.ExpandedTokens.Where(t => !Model.SearchTokens.Contains(t)))
+                    {
+                        <span class="search-field-tag" style="background:linear-gradient(135deg,#f0eaf7,#e2d8f0); color:#6a5a8a;">@t</span>
+                    }
+                </div>
+            }
         }
         else if (!Model.Searched)
         {
@@ -100,7 +110,7 @@
     <div class="mc-card mb-4">
         <div class="mc-card-header">
             <h2 class="mc-card-title"><i class="bi bi-buildings"></i> Firmen (@Model.ScoredCompanies.Count)</h2>
-            <span class="search-algo-badge"><i class="bi bi-cpu me-1"></i>Algorithmus</span>
+            <span class="search-algo-badge"><i class="bi bi-cpu me-1"></i>BM25</span>
         </div>
         <div class="mc-table-wrapper">
             <table class="mc-table">
@@ -110,7 +120,7 @@
                         <th>Firmenname</th>
                         <th class="d-none d-md-table-cell">Ort</th>
                         <th class="d-none d-lg-table-cell">Kontakt</th>
-                        <th class="d-none d-md-table-cell">Treffer in</th>
+                        <th class="d-none d-md-table-cell">Treffer</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -169,6 +179,7 @@
                             {
                                 <span class="search-field-tag">@f</span>
                             }
+                            <div class="search-method-tag" title="@r.MatchMethod">@r.MatchMethod</div>
                         </td>
                         <td style="text-align:right;">
                             <a asp-controller="Companies" asp-action="Details" asp-route-id="@r.Company.Id"
@@ -189,7 +200,7 @@
     <div class="mc-card mb-4">
         <div class="mc-card-header">
             <h2 class="mc-card-title"><i class="bi bi-people"></i> Kontakte (@Model.ScoredContacts.Count)</h2>
-            <span class="search-algo-badge"><i class="bi bi-cpu me-1"></i>Algorithmus</span>
+            <span class="search-algo-badge"><i class="bi bi-cpu me-1"></i>BM25</span>
         </div>
         <div class="mc-table-wrapper">
             <table class="mc-table">
@@ -199,7 +210,7 @@
                         <th>Name</th>
                         <th class="d-none d-md-table-cell">Firma</th>
                         <th class="d-none d-lg-table-cell">Kontaktdaten</th>
-                        <th class="d-none d-md-table-cell">Treffer in</th>
+                        <th class="d-none d-md-table-cell">Treffer</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -264,6 +275,7 @@
                             {
                                 <span class="search-field-tag">@f</span>
                             }
+                            <div class="search-method-tag" title="@r.MatchMethod">@r.MatchMethod</div>
                         </td>
                         <td style="text-align:right;">
                             <a asp-controller="Contacts" asp-action="Details" asp-route-id="@r.Contact.Id"

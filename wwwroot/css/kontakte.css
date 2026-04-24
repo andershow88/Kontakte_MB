@@ -426,6 +426,20 @@
     border-color: #4a3820;
 }
 
+/* ── Search Method Tag ────────────────────────────────────────────────────────── */
+.search-method-tag {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: var(--mc-text-muted);
+    margin-top: 3px;
+    letter-spacing: 0.03em;
+}
+
+[data-theme="dark"] .search-method-tag {
+    color: var(--mc-text-muted);
+}
+
 /* ── Theme-Toggle Icon Farbe ─────────────────────────────────────────────────── */
 #themeToggle .bi-sun-fill  { color: #e0b030; }
 #themeToggle .bi-moon-fill { color: #6060a0; }
