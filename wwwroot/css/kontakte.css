@@ -24,19 +24,187 @@
     color: var(--mc-text) !important;
 }
 
-/* ── Topbar Search input ───────────────────────────────────────────────────── */
-.mc-topbar .form-control {
-    background: #f5f5f5;
-    border-color: #d0d0d0;
-    color: #333;
+/* ── Topbar Search: Locked Bar + Pick Buttons ─────────────────────────────── */
+.topbar-search-bar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--mc-border);
+    border-left: none;
+    border-radius: 0 var(--mc-radius-sm) var(--mc-radius-sm) 0;
+    background: var(--mc-bg);
+    height: 42px;
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
 }
-[data-theme="dark"] .mc-topbar .form-control {
-    background: #16162a;
+
+.topbar-search-bar:focus-within {
+    border-color: var(--mc-primary);
+}
+
+.topbar-search-bar.mode-smart:focus-within { border-color: var(--mc-primary); }
+.topbar-search-bar.mode-ai:focus-within    { border-color: #8a6abf; }
+
+/* Locked overlay */
+.topbar-search-locked {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    background: var(--mc-bg);
+    color: var(--mc-text-muted);
+    font-size: 0.84rem;
+    font-weight: 500;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.topbar-search-locked i {
+    font-size: 0.9rem;
+}
+
+/* Submit-Pfeil */
+.topbar-search-submit {
+    flex-shrink: 0;
+    width: 38px;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: var(--mc-text-muted);
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.topbar-search-submit:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.topbar-search-bar.mode-smart .topbar-search-submit { color: var(--mc-primary); }
+.topbar-search-bar.mode-ai .topbar-search-submit    { color: #8a6abf; }
+
+.topbar-search-submit:not(:disabled):hover {
+    transform: scale(1.15);
+}
+
+/* Pick Buttons (links von der Suchbox) */
+.topbar-pick-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0 0.8rem;
+    height: 42px;
+    border: 1.5px solid var(--mc-border);
+    border-radius: 0;
+    background: var(--mc-bg-card);
+    color: var(--mc-text-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: 'Roboto', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.topbar-pick-btn:first-of-type {
+    border-radius: var(--mc-radius-sm) 0 0 var(--mc-radius-sm);
+}
+
+.topbar-pick-btn + .topbar-pick-btn {
+    border-left: none;
+}
+
+.topbar-pick-btn i { font-size: 1.05rem; }
+
+.topbar-pick-btn:hover {
+    border-color: var(--mc-primary);
+    color: var(--mc-primary);
+    background: rgba(0,81,90,0.04);
+}
+
+.topbar-pick-smart.picked {
+    background: var(--mc-primary);
+    border-color: var(--mc-primary);
+    color: #fff;
+}
+
+.topbar-pick-ai:hover {
+    border-color: #8a6abf;
+    color: #6a5a8a;
+    background: rgba(106,90,138,0.04);
+}
+
+.topbar-pick-ai.picked {
+    background: linear-gradient(135deg, #6a5a8a, #8a6abf);
+    border-color: #6a5a8a;
+    color: #fff;
+}
+
+.topbar-search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--mc-text);
+    font-size: 0.88rem;
+    outline: none;
+    min-width: 0;
+    font-family: inherit;
+    padding: 0 0.75rem;
+    height: 100%;
+}
+
+.topbar-search-input::placeholder {
+    color: var(--mc-text-muted);
+}
+
+.topbar-search-kbd {
+    font-size: 0.66rem;
+    color: var(--mc-text-muted);
+    background: var(--mc-surface);
+    border: 1px solid var(--mc-border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    flex-shrink: 0;
+}
+
+/* Dark Mode – Topbar Search */
+[data-theme="dark"] .topbar-search-bar {
     border-color: var(--mc-border);
+    background: var(--mc-bg-card);
+}
+
+[data-theme="dark"] .topbar-search-locked {
+    background: var(--mc-bg-card);
+}
+
+[data-theme="dark"] .topbar-search-input {
     color: var(--mc-text);
 }
-[data-theme="dark"] .mc-topbar .form-control::placeholder {
+
+[data-theme="dark"] .topbar-search-input::placeholder {
     color: var(--mc-text-muted);
+}
+
+[data-theme="dark"] .topbar-pick-btn {
+    background: var(--mc-bg-card);
+    border-color: var(--mc-border);
+    color: var(--mc-text-muted);
+}
+
+[data-theme="dark"] .topbar-pick-btn:hover {
+    background: rgba(90,171,181,0.08);
+}
+
+[data-theme="dark"] .topbar-pick-ai:hover {
+    background: rgba(106,90,138,0.1);
 }
 
 /* ── Tabellen im Dark Mode ──────────────────────────────────────────────────── */

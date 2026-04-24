@@ -92,24 +92,36 @@
                 <i class="bi bi-list"></i>
             </button>
 
-            <!-- ── KI-Suchleiste ── -->
-            <div style="flex:1; display:flex; align-items:center; gap:.7rem;
-                        background:var(--mc-bg); border:1.5px solid var(--mc-border);
-                        border-radius:26px; padding:.45rem .55rem .45rem 1.1rem;
-                        transition:border-color .2s;"
-                 id="aiSearchBar"
-                 onfocusin="this.style.borderColor='var(--mc-gold)'"
-                 onfocusout="this.style.borderColor='var(--mc-border)'">
-                <i class="bi bi-stars" style="color:var(--mc-gold); font-size:1.05rem; flex-shrink:0;"></i>
-                <input id="aiTopbarEingabe" type="text"
-                       placeholder="Frag den KI-Assistenten… (z.B. &quot;Zeig favorisierte Kontakte&quot;)"
-                       style="flex:1; border:none; background:transparent; color:var(--mc-text);
-                              font-size:.9rem; outline:none; min-width:0; font-family:inherit;"
-                       onkeydown="aiTopbarKeydown(event)" />
-                <kbd style="font-size:.68rem; color:var(--mc-text-muted); background:var(--mc-surface);
-                            border:1px solid var(--mc-border); border-radius:5px; padding:1px 6px;
-                            flex-shrink:0;" class="d-none d-md-inline">Enter</kbd>
-            </div>
+            <!-- ── Globale Suchleiste mit Mode-Toggle ── -->
+            <form action="/Search" method="get" id="topbarSearchForm"
+                  style="flex:1; display:flex; align-items:center; gap:0;"
+                  autocomplete="off">
+                <input type="hidden" name="mode" id="topbarMode" value="smart" />
+                <button type="button" class="topbar-pick-btn topbar-pick-smart" onclick="topbarSetMode('smart')"
+                        title="Suche ohne KI">
+                    <i class="bi bi-cpu"></i>
+                    <span class="d-none d-md-inline">Suche ohne KI</span>
+                </button>
+                <button type="button" class="topbar-pick-btn topbar-pick-ai" onclick="topbarSetMode('ai')"
+                        title="KI-Suche">
+                    <i class="bi bi-stars"></i>
+                    <span class="d-none d-md-inline">KI-Suche</span>
+                </button>
+                <div class="topbar-search-bar" id="topbarSearchBar">
+                    <div class="topbar-search-locked" id="topbarLocked">
+                        <i class="bi bi-lock"></i>
+                        <span>Suchmethode wählen</span>
+                    </div>
+                    <input id="topbarSearchInput" name="q" type="text"
+                           class="topbar-search-input"
+                           placeholder=""
+                           disabled />
+                    <button type="submit" class="topbar-search-submit" id="topbarSubmit" disabled
+                            title="Suchen">
+                        <i class="bi bi-arrow-right-circle-fill"></i>
+                    </button>
+                </div>
+            </form>
 
             <div class="mc-topbar-right" style="flex-shrink:0;">
                 <span class="mc-topbar-date d-none d-md-inline">
@@ -210,7 +222,38 @@
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
-        // ── KI-Assistent ──────────────────────────────────────────────────
+        // ── Topbar-Suche: Modus wählen ───────────────────────────────────
+        function topbarSetMode(mode) {
+            document.getElementById('topbarMode').value = mode;
+            var input = document.getElementById('topbarSearchInput');
+            var submit = document.getElementById('topbarSubmit');
+            var locked = document.getElementById('topbarLocked');
+            var bar = document.getElementById('topbarSearchBar');
+
+            locked.style.display = 'none';
+            input.disabled = false;
+            submit.disabled = false;
+            bar.classList.remove('locked');
+
+            document.querySelectorAll('.topbar-pick-btn').forEach(function(b) {
+                b.classList.remove('picked');
+            });
+
+            if (mode === 'ai') {
+                input.placeholder = 'KI-Suche: z.B. Wer arbeitet bei Siemens?';
+                bar.classList.add('mode-ai');
+                bar.classList.remove('mode-smart');
+                document.querySelector('.topbar-pick-ai').classList.add('picked');
+            } else {
+                input.placeholder = 'Smart-Suche: Firma, Name, E-Mail, Telefon ...';
+                bar.classList.add('mode-smart');
+                bar.classList.remove('mode-ai');
+                document.querySelector('.topbar-pick-smart').classList.add('picked');
+            }
+            input.focus();
+        }
+
+        // ── KI-Assistent (Modal bleibt für Folgefragen) ───────────────────
         let aiVerlauf = [];
 
         function aiOeffnen() {
@@ -222,25 +265,11 @@
         function aiSchliessen() {
             const m = document.getElementById('aiModal');
             if (m) m.style.display = 'none';
-            const tb = document.getElementById('aiTopbarEingabe');
-            if (tb) { tb.value = ''; }
         }
 
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') aiSchliessen();
         });
-
-        function aiTopbarKeydown(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const frage = document.getElementById('aiTopbarEingabe').value.trim();
-                if (!frage) return;
-                aiVerlauf = [];
-                document.getElementById('aiVerlauf').innerHTML = '';
-                aiOeffnen();
-                aiSenden(frage);
-            }
-        }
 
         function aiModalKeydown(e) {
             if (e.key === 'Enter') {
@@ -288,7 +317,7 @@
             const verlaufEl = document.getElementById('aiVerlauf');
             const typing = document.createElement('div');
             typing.className = 'ai-msg ai-msg-assistant';
-            typing.innerHTML = '<div class="ai-typing"><div class="ai-typing-dot"></div><div class="ai-typing-dot"></div><div class="ai-typing-dot"></div><span>Wird geladen…</span></div>';
+            typing.innerHTML = '<div class="ai-typing"><div class="ai-typing-dot"></div><div class="ai-typing-dot"></div><div class="ai-typing-dot"></div><span>Wird geladen\u2026</span></div>';
             verlaufEl.appendChild(typing);
             verlaufEl.scrollTop = verlaufEl.scrollHeight;
 
@@ -303,7 +332,7 @@
 
                 if (data.error) {
                     aiNachrichtAppend('assistant',
-                        `<span style="color:#e74c3c;"><i class="bi bi-exclamation-triangle"></i> ${data.error}</span>`);
+                        '<span style="color:#e74c3c;"><i class="bi bi-exclamation-triangle"><\/i> ' + data.error + '<\/span>');
                 } else {
                     aiVerlauf.push({ rolle: 'user', text: frage });
                     aiVerlauf.push({ rolle: 'assistant', text: data.antwort });
@@ -313,7 +342,7 @@
             } catch {
                 verlaufEl.removeChild(typing);
                 aiNachrichtAppend('assistant',
-                    '<span style="color:#e74c3c;">Verbindungsfehler. Bitte versuche es erneut.</span>');
+                    '<span style="color:#e74c3c;">Verbindungsfehler. Bitte versuche es erneut.<\/span>');
             } finally {
                 document.getElementById('aiModalEingabe')?.focus();
             }
