@@ -60,11 +60,12 @@
 <div class="mc-card mb-4">
     <div class="mc-card-body">
         <form asp-controller="Search" asp-action="Index" method="get" class="d-flex gap-2">
+            <input type="hidden" name="mode" value="smart" />
             <input type="text" name="q" class="form-control"
-                   placeholder="Firma, Nachname, E-Mail, Telefon, Ort …"
+                   placeholder="Firma, Nachname, E-Mail, Telefon, Ort ..."
                    style="font-size:0.9rem;" />
             <button type="submit" class="btn-mc-primary" style="white-space:nowrap;">
-                <i class="bi bi-search me-1"></i> Suchen
+                <i class="bi bi-search me-1"></i> Smart-Suche
             </button>
         </form>
     </div>

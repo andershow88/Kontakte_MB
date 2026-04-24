@@ -2,100 +2,177 @@
 @{
     Layout = "_Layout";
     ViewData["Title"] = "Suche";
-    ViewData["SearchQuery"] = Model.Query;
     ViewData["Breadcrumb"] = "<span>Suche</span>";
+    var isAi = Model.Mode == "ai";
+    var isSmart = !isAi;
 }
 
 <div class="mc-page-header">
     <div>
         <h1 class="mc-page-title"><i class="bi bi-search me-2"></i>Globale Suche</h1>
-        @if (Model.Searched)
+        @if (Model.Searched && isSmart)
         {
-            <p class="mc-page-subtitle">@Model.TotalResults Ergebnisse für „@Model.Query"</p>
+            <p class="mc-page-subtitle">
+                @Model.TotalResults Ergebnisse für „@Model.Query"
+                <span class="ms-2" style="color:var(--mc-text-muted); font-size:0.78rem;">
+                    <i class="bi bi-lightning-fill me-1"></i>@Model.ElapsedMs ms
+                </span>
+            </p>
+        }
+        else if (!Model.Searched)
+        {
+            <p class="mc-page-subtitle">Firmen und Kontakte durchsuchen</p>
         }
     </div>
 </div>
 
+<!-- ── Such-Card mit Mode-Toggle ─────────────────────────────────────────── -->
 <div class="mc-card mb-4">
-    <div class="mc-card-body">
-        <form method="get" class="d-flex gap-2">
-            <input type="text" name="q" value="@Model.Query" class="form-control"
-                   placeholder="Firma, Name, E-Mail, Telefon, Ort …"
-                   style="font-size:0.9rem;" autofocus />
-            <button type="submit" class="btn-mc-primary" style="white-space:nowrap;">
+    <div class="mc-card-body" style="padding:1.25rem 1.5rem;">
+
+        <!-- Mode Toggle -->
+        <div class="search-mode-toggle mb-3">
+            <button type="button" class="search-mode-btn @(isSmart ? "active" : "")" data-mode="smart" onclick="setSearchMode('smart')">
+                <i class="bi bi-cpu"></i>
+                <span>Smart-Suche</span>
+                <span class="search-mode-tag">Algorithmus</span>
+            </button>
+            <button type="button" class="search-mode-btn @(isAi ? "active" : "")" data-mode="ai" onclick="setSearchMode('ai')">
+                <i class="bi bi-stars"></i>
+                <span>KI-Suche</span>
+                <span class="search-mode-tag">OpenAI</span>
+            </button>
+        </div>
+
+        <!-- Search Input -->
+        <form method="get" id="searchForm" class="d-flex gap-2">
+            <input type="hidden" name="mode" id="searchMode" value="@Model.Mode" />
+            <div style="flex:1; position:relative;">
+                <i class="bi @(isAi ? "bi-stars" : "bi-cpu")" id="searchIcon"
+                   style="position:absolute; left:14px; top:50%; transform:translateY(-50%);
+                          color:var(--mc-primary); font-size:1rem; opacity:0.6;"></i>
+                <input type="text" name="q" value="@Model.Query" class="form-control"
+                       id="searchInput"
+                       placeholder="@(isAi ? "Frag die KI z.B. Wer arbeitet bei Siemens?" : "Firma, Name, E-Mail, Telefon, Ort ...")"
+                       style="font-size:0.9rem; padding-left:40px; border-radius:var(--mc-radius-sm);
+                              border:1.5px solid var(--mc-border); height:46px;"
+                       autofocus />
+            </div>
+            <button type="submit" class="btn-mc-primary" style="white-space:nowrap; height:46px;">
                 <i class="bi bi-search me-1"></i> Suchen
             </button>
         </form>
+
+        <!-- Info-Zeile -->
+        <div class="d-flex align-items-center gap-3 mt-2" style="font-size:0.76rem; color:var(--mc-text-muted);">
+            @if (isSmart)
+            {
+                <span><i class="bi bi-info-circle me-1"></i>Fuzzy-Suche mit Levenshtein-Distanz, Trigram-Matching und gewichteter Feld-Relevanz</span>
+            }
+            else
+            {
+                <span><i class="bi bi-info-circle me-1"></i>KI-gestützte Suche – versteht natürliche Sprache und durchsucht den gesamten Datenbestand</span>
+            }
+        </div>
     </div>
 </div>
 
-@if (Model.Searched && !Model.HasResults)
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- SMART SEARCH RESULTS                                                      -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+@if (isSmart && Model.Searched && !Model.HasResults)
 {
     <div class="mc-card">
         <div class="mc-card-body text-center py-5 text-muted">
             <i class="bi bi-search fs-2 d-block mb-2 opacity-25"></i>
             Keine Ergebnisse für „@Model.Query" gefunden.
+            <div class="mt-3" style="font-size:0.82rem;">
+                <button type="button" class="btn-mc-outline" onclick="setSearchMode('ai'); document.getElementById('searchForm').submit();">
+                    <i class="bi bi-stars me-1"></i> Mit KI-Suche versuchen
+                </button>
+            </div>
         </div>
     </div>
 }
 
-@if (Model.Companies.Any())
+@if (isSmart && Model.ScoredCompanies.Any())
 {
     <div class="mc-card mb-4">
         <div class="mc-card-header">
-            <h2 class="mc-card-title"><i class="bi bi-buildings"></i> Firmen (@Model.Companies.Count)</h2>
+            <h2 class="mc-card-title"><i class="bi bi-buildings"></i> Firmen (@Model.ScoredCompanies.Count)</h2>
+            <span class="search-algo-badge"><i class="bi bi-cpu me-1"></i>Algorithmus</span>
         </div>
         <div class="mc-table-wrapper">
             <table class="mc-table">
                 <thead>
                     <tr>
+                        <th style="width:50px;">Relevanz</th>
                         <th>Firmenname</th>
                         <th class="d-none d-md-table-cell">Ort</th>
                         <th class="d-none d-lg-table-cell">Kontakt</th>
+                        <th class="d-none d-md-table-cell">Treffer in</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                @foreach (var c in Model.Companies)
+                @foreach (var r in Model.ScoredCompanies)
                 {
+                    var pct = Model.MaxCompanyScore > 0
+                        ? (int)Math.Round(r.Score / Model.MaxCompanyScore * 100) : 0;
+                    var barColor = pct >= 80 ? "var(--mc-primary)" : pct >= 50 ? "var(--mc-gold)" : "var(--mc-text-muted)";
                     <tr>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                @if (c.IsFavorite)
+                                <div class="search-relevance-bar" title="Relevanz: @pct%">
+                                    <div class="search-relevance-fill" style="width:@(pct)%; background:@barColor;"></div>
+                                </div>
+                                <span style="font-size:0.72rem; color:var(--mc-text-muted); min-width:28px;">@(pct)%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                @if (r.Company.IsFavorite)
                                 {
                                     <i class="bi bi-star-fill" style="color:var(--mc-gold); font-size:0.8rem;"></i>
                                 }
                                 <div>
-                                    <a asp-controller="Companies" asp-action="Details" asp-route-id="@c.Id"
+                                    <a asp-controller="Companies" asp-action="Details" asp-route-id="@r.Company.Id"
                                        class="fw-semibold text-decoration-none" style="color:var(--mc-text);">
-                                        @c.Name
+                                        @r.Company.Name
                                     </a>
-                                    @if (!string.IsNullOrEmpty(c.Industry))
+                                    @if (!string.IsNullOrEmpty(r.Company.Industry))
                                     {
-                                        <div class="small text-muted">@c.Industry</div>
+                                        <div class="small text-muted">@r.Company.Industry</div>
                                     }
                                 </div>
                             </div>
                         </td>
                         <td class="d-none d-md-table-cell" style="font-size:0.82rem; color:var(--mc-text-muted);">
-                            @(string.Join(" · ", new[] { c.City, c.Country }.Where(x => !string.IsNullOrWhiteSpace(x))))
+                            @(string.Join(" · ", new[] { r.Company.City, r.Company.Country }.Where(x => !string.IsNullOrWhiteSpace(x))))
                         </td>
                         <td class="d-none d-lg-table-cell" style="font-size:0.82rem;">
-                            @if (!string.IsNullOrEmpty(c.Phone))
+                            @if (!string.IsNullOrEmpty(r.Company.Phone))
                             {
-                                <a href="tel:@c.Phone" class="text-muted d-block text-decoration-none">
-                                    <i class="bi bi-telephone me-1"></i>@c.Phone
+                                <a href="tel:@r.Company.Phone" class="text-muted d-block text-decoration-none">
+                                    <i class="bi bi-telephone me-1"></i>@r.Company.Phone
                                 </a>
                             }
-                            @if (!string.IsNullOrEmpty(c.Email))
+                            @if (!string.IsNullOrEmpty(r.Company.Email))
                             {
-                                <a href="mailto:@c.Email" class="text-muted d-block text-decoration-none">
-                                    <i class="bi bi-envelope me-1"></i>@c.Email
+                                <a href="mailto:@r.Company.Email" class="text-muted d-block text-decoration-none">
+                                    <i class="bi bi-envelope me-1"></i>@r.Company.Email
                                 </a>
+                            }
+                        </td>
+                        <td class="d-none d-md-table-cell">
+                            @foreach (var f in r.MatchedFields)
+                            {
+                                <span class="search-field-tag">@f</span>
                             }
                         </td>
                         <td style="text-align:right;">
-                            <a asp-controller="Companies" asp-action="Details" asp-route-id="@c.Id" class="btn-mc-ghost" style="padding:0.2rem 0.5rem;">
+                            <a asp-controller="Companies" asp-action="Details" asp-route-id="@r.Company.Id"
+                               class="btn-mc-ghost" style="padding:0.2rem 0.5rem;">
                                 <i class="bi bi-eye"></i>
                             </a>
                         </td>
@@ -107,69 +184,90 @@
     </div>
 }
 
-@if (Model.Contacts.Any())
+@if (isSmart && Model.ScoredContacts.Any())
 {
     <div class="mc-card mb-4">
         <div class="mc-card-header">
-            <h2 class="mc-card-title"><i class="bi bi-people"></i> Kontakte (@Model.Contacts.Count)</h2>
+            <h2 class="mc-card-title"><i class="bi bi-people"></i> Kontakte (@Model.ScoredContacts.Count)</h2>
+            <span class="search-algo-badge"><i class="bi bi-cpu me-1"></i>Algorithmus</span>
         </div>
         <div class="mc-table-wrapper">
             <table class="mc-table">
                 <thead>
                     <tr>
+                        <th style="width:50px;">Relevanz</th>
                         <th>Name</th>
                         <th class="d-none d-md-table-cell">Firma</th>
                         <th class="d-none d-lg-table-cell">Kontaktdaten</th>
+                        <th class="d-none d-md-table-cell">Treffer in</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                @foreach (var c in Model.Contacts)
+                @foreach (var r in Model.ScoredContacts)
                 {
+                    var pct = Model.MaxContactScore > 0
+                        ? (int)Math.Round(r.Score / Model.MaxContactScore * 100) : 0;
+                    var barColor = pct >= 80 ? "var(--mc-primary)" : pct >= 50 ? "var(--mc-gold)" : "var(--mc-text-muted)";
                     <tr>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                @if (c.IsFavorite)
+                                <div class="search-relevance-bar" title="Relevanz: @pct%">
+                                    <div class="search-relevance-fill" style="width:@(pct)%; background:@barColor;"></div>
+                                </div>
+                                <span style="font-size:0.72rem; color:var(--mc-text-muted); min-width:28px;">@(pct)%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                @if (r.Contact.IsFavorite)
                                 {
                                     <i class="bi bi-star-fill" style="color:var(--mc-gold); font-size:0.8rem;"></i>
                                 }
                                 <div>
-                                    <a asp-controller="Contacts" asp-action="Details" asp-route-id="@c.Id"
+                                    <a asp-controller="Contacts" asp-action="Details" asp-route-id="@r.Contact.Id"
                                        class="fw-semibold text-decoration-none" style="color:var(--mc-text);">
-                                        @c.DisplayName
+                                        @r.Contact.DisplayName
                                     </a>
-                                    @if (!string.IsNullOrEmpty(c.Position))
+                                    @if (!string.IsNullOrEmpty(r.Contact.Position))
                                     {
-                                        <div class="small text-muted">@c.Position</div>
+                                        <div class="small text-muted">@r.Contact.Position</div>
                                     }
                                 </div>
                             </div>
                         </td>
                         <td class="d-none d-md-table-cell" style="font-size:0.82rem; color:var(--mc-text-muted);">
-                            @if (c.Company != null)
+                            @if (r.Contact.Company != null)
                             {
-                                <a asp-controller="Companies" asp-action="Details" asp-route-id="@c.Company.Id"
+                                <a asp-controller="Companies" asp-action="Details" asp-route-id="@r.Contact.Company.Id"
                                    class="text-decoration-none" style="color:var(--mc-text-muted);">
-                                    @c.Company.Name
+                                    @r.Contact.Company.Name
                                 </a>
                             }
                         </td>
                         <td class="d-none d-lg-table-cell" style="font-size:0.82rem;">
-                            @if (!string.IsNullOrEmpty(c.Email))
+                            @if (!string.IsNullOrEmpty(r.Contact.Email))
                             {
-                                <a href="mailto:@c.Email" class="text-muted d-block text-decoration-none">
-                                    <i class="bi bi-envelope me-1"></i>@c.Email
+                                <a href="mailto:@r.Contact.Email" class="text-muted d-block text-decoration-none">
+                                    <i class="bi bi-envelope me-1"></i>@r.Contact.Email
                                 </a>
                             }
-                            @if (!string.IsNullOrEmpty(c.Phone))
+                            @if (!string.IsNullOrEmpty(r.Contact.Phone))
                             {
-                                <a href="tel:@c.Phone" class="text-muted d-block text-decoration-none">
-                                    <i class="bi bi-telephone me-1"></i>@c.Phone
+                                <a href="tel:@r.Contact.Phone" class="text-muted d-block text-decoration-none">
+                                    <i class="bi bi-telephone me-1"></i>@r.Contact.Phone
                                 </a>
                             }
                         </td>
+                        <td class="d-none d-md-table-cell">
+                            @foreach (var f in r.MatchedFields)
+                            {
+                                <span class="search-field-tag">@f</span>
+                            }
+                        </td>
                         <td style="text-align:right;">
-                            <a asp-controller="Contacts" asp-action="Details" asp-route-id="@c.Id" class="btn-mc-ghost" style="padding:0.2rem 0.5rem;">
+                            <a asp-controller="Contacts" asp-action="Details" asp-route-id="@r.Contact.Id"
+                               class="btn-mc-ghost" style="padding:0.2rem 0.5rem;">
                                 <i class="bi bi-eye"></i>
                             </a>
                         </td>
@@ -179,4 +277,93 @@
             </table>
         </div>
     </div>
+}
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!-- AI SEARCH RESULTS (inline)                                                -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+@if (isAi)
+{
+    <div class="mc-card mb-4" id="aiSearchCard">
+        <div class="mc-card-header">
+            <h2 class="mc-card-title"><i class="bi bi-stars"></i> KI-Antwort</h2>
+            <span class="search-ai-badge"><i class="bi bi-stars me-1"></i>OpenAI</span>
+        </div>
+        <div class="mc-card-body" id="aiSearchResult" style="min-height:100px;">
+            @if (Model.Searched)
+            {
+                <div class="d-flex align-items-center gap-2 text-muted">
+                    <div class="ai-typing" style="border:none; background:transparent; padding:0;">
+                        <div class="ai-typing-dot"></div>
+                        <div class="ai-typing-dot"></div>
+                        <div class="ai-typing-dot"></div>
+                    </div>
+                    <span style="font-size:0.85rem;">KI verarbeitet Ihre Anfrage …</span>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-stars fs-2 d-block mb-2 opacity-25"></i>
+                    <span style="font-size:0.88rem;">Geben Sie eine Frage ein und drücken Sie „Suchen"</span>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@section Scripts {
+<script>
+    function setSearchMode(mode) {
+        document.getElementById('searchMode').value = mode;
+        var btns = document.querySelectorAll('.search-mode-btn');
+        btns.forEach(function(b) {
+            b.classList.toggle('active', b.dataset.mode === mode);
+        });
+        var icon = document.getElementById('searchIcon');
+        icon.className = mode === 'ai' ? 'bi bi-stars' : 'bi bi-cpu';
+        var input = document.getElementById('searchInput');
+        input.placeholder = mode === 'ai'
+            ? 'Frag die KI z.B. \u201eWer arbeitet bei Siemens?\u201c'
+            : 'Firma, Name, E-Mail, Telefon, Ort \u2026';
+    }
+</script>
+@if (isAi && Model.Searched && !string.IsNullOrWhiteSpace(Model.Query))
+{
+    <script>
+        (async function() {
+            var query = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Query));
+            var container = document.getElementById('aiSearchResult');
+            try {
+                var res = await fetch('/AiAssistent/Fragen', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ frage: query, verlauf: [] })
+                });
+                var data = await res.json();
+                if (data.error) {
+                    container.innerHTML = '<div class="text-danger"><i class="bi bi-exclamation-triangle me-1"><\/i>' + data.error + '<\/div>';
+                } else {
+                    container.innerHTML = '<div class="ai-search-response">' + formatMd(data.antwort) + '<\/div>';
+                }
+            } catch (e) {
+                container.innerHTML = '<div class="text-danger"><i class="bi bi-exclamation-triangle me-1"><\/i>Verbindungsfehler.<\/div>';
+            }
+        })();
+
+        function formatMd(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1<\/strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1<\/em>')
+                .replace(/`(.+?)`/g, '<code>$1<\/code>')
+                .replace(/^#{1,3}\s+(.+)$/gm, '<strong style="display:block;margin:0.8rem 0 0.3rem;">$1<\/strong>')
+                .replace(/^[-*]\s+(.+)$/gm, '<li>$1<\/li>')
+                .replace(/\n\n+/g, '<\/p><p>')
+                .replace(/\n/g, '<br>');
+        }
+    </script>
+}
 }
