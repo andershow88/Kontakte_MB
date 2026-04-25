@@ -14,17 +14,14 @@
         <a asp-action="ExportCsv" asp-route-q="@Model.SearchTerm" class="btn-mc-ghost">
             <i class="bi bi-download me-1"></i> CSV
         </a>
-        <a asp-action="Create" class="btn-mc-primary">
+        <button type="button" class="btn-mc-primary" onclick="openCreateModal('company')">
             <i class="bi bi-plus-lg me-1"></i> Neue Firma
-        </a>
+        </button>
     </div>
 </div>
 
 <!-- Filter-Leiste -->
 <form method="get" class="mc-filter-bar mb-3">
-    <input type="text" name="q" value="@Model.SearchTerm" class="form-control"
-           placeholder="Suche nach Name, Ort, E-Mail …" style="min-width:220px; flex:1;" />
-
     <select name="city" class="form-select" style="min-width:140px;">
         <option value="">Alle Orte</option>
         @foreach (var c in Model.Cities)

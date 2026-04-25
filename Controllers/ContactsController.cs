@@ -154,6 +154,72 @@ public class ContactsController : Controller
         return RedirectToAction("Details", new { id = model.Id });
     }
 
+    [HttpGet("api/contacts/check-duplicate")]
+    public async Task<IActionResult> CheckDuplicateContact(string? lastName, string? firstName, string? email)
+    {
+        if (string.IsNullOrWhiteSpace(lastName) && string.IsNullOrWhiteSpace(email))
+            return Ok(new { duplicates = Array.Empty<object>() });
+
+        var query = _db.Contacts.Include(c => c.Company).AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var emailLower = email.Trim().ToLower();
+            query = query.Where(c => c.Email != null && c.Email.ToLower() == emailLower);
+        }
+        else
+        {
+            var lastLower = lastName!.Trim().ToLower();
+            query = query.Where(c => c.LastName.ToLower() == lastLower);
+            if (!string.IsNullOrWhiteSpace(firstName))
+            {
+                var firstLower = firstName.Trim().ToLower();
+                query = query.Where(c => c.FirstName != null && c.FirstName.ToLower() == firstLower);
+            }
+        }
+
+        var matches = await query.Take(5)
+            .Select(c => new {
+                c.Id,
+                name = (c.FirstName != null ? c.FirstName + " " : "") + c.LastName,
+                company = c.Company != null ? c.Company.Name : null,
+                c.Email, c.Phone, c.City
+            })
+            .ToListAsync();
+
+        return Ok(new { duplicates = matches });
+    }
+
+    [HttpGet("api/companies/list")]
+    public async Task<IActionResult> CompanyListApi()
+    {
+        var list = await _db.Companies.OrderBy(c => c.Name)
+            .Select(c => new { c.Id, c.Name }).ToListAsync();
+        return Ok(list);
+    }
+
+    [HttpPost("api/contacts/create")]
+    public async Task<IActionResult> CreateApi([FromBody] Contact model)
+    {
+        if (string.IsNullOrWhiteSpace(model.LastName))
+            return BadRequest(new { error = "Nachname ist erforderlich." });
+
+        if (!string.IsNullOrWhiteSpace(model.Email))
+        {
+            var dupe = await _db.Contacts
+                .AnyAsync(c => c.Email == model.Email);
+            if (dupe)
+                return BadRequest(new { error = $"E-Mail {model.Email} existiert bereits." });
+        }
+
+        model.CreatedAt = DateTime.UtcNow;
+        model.UpdatedAt = DateTime.UtcNow;
+        _db.Contacts.Add(model);
+        await _db.SaveChangesAsync();
+
+        return Ok(new { id = model.Id, name = model.DisplayName });
+    }
+
     // ── Bearbeiten ────────────────────────────────────────────────────────────
 
     [HttpGet]

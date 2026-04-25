@@ -112,6 +112,40 @@ public class CompaniesController : Controller
         return RedirectToAction("Details", new { id = model.Id });
     }
 
+    [HttpGet("api/companies/check-duplicate")]
+    public async Task<IActionResult> CheckDuplicateCompany(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name) || name.Length < 2)
+            return Ok(new { duplicates = Array.Empty<object>() });
+
+        var term = name.Trim().ToLower();
+        var matches = await _db.Companies
+            .Where(c => c.Name.ToLower().Contains(term) || term.Contains(c.Name.ToLower()))
+            .OrderBy(c => c.Name)
+            .Take(5)
+            .Select(c => new {
+                c.Id, c.Name, c.City, c.Phone, c.Email,
+                contacts = c.Contacts.Count(ct => !ct.IsDeleted)
+            })
+            .ToListAsync();
+
+        return Ok(new { duplicates = matches });
+    }
+
+    [HttpPost("api/companies/create")]
+    public async Task<IActionResult> CreateApi([FromBody] Company model)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new { error = "Firmenname ist erforderlich." });
+
+        model.CreatedAt = DateTime.UtcNow;
+        model.UpdatedAt = DateTime.UtcNow;
+        _db.Companies.Add(model);
+        await _db.SaveChangesAsync();
+
+        return Ok(new { id = model.Id, name = model.Name });
+    }
+
     // ── Bearbeiten ────────────────────────────────────────────────────────────
 
     [HttpGet]

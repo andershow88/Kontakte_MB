@@ -211,6 +211,208 @@
             @RenderBody()
         </main>
 
+        <!-- ══ Modal: Neue Firma ══════════════════════════════════════════ -->
+        <div class="create-modal-overlay" id="companyModalOverlay" onclick="closeCreateModal('company')">
+            <div class="create-modal" onclick="event.stopPropagation()">
+                <div class="create-modal-header">
+                    <div class="create-modal-header-icon company"><i class="bi bi-buildings"></i></div>
+                    <div>
+                        <div class="create-modal-title">Neue Firma anlegen</div>
+                        <div class="create-modal-subtitle">Kontaktdatenbank</div>
+                    </div>
+                    <button class="create-modal-close" onclick="closeCreateModal('company')">&times;</button>
+                </div>
+                <div class="create-modal-body">
+                    <div class="create-modal-error" id="companyModalError"></div>
+                    <div class="dupe-warn" id="companyDupeWarn" style="display:none;"></div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Firmenname <span class="text-danger">*</span></label>
+                            <div class="address-suggest-wrap">
+                                <input type="text" class="form-control" id="cm_name" placeholder="z. B. Mustermann GmbH" autofocus
+                                       oninput="companyLookup(); checkCompanyDupe()" />
+                                <div class="address-suggest-list" id="cm_name_suggest"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Branche</label>
+                            <input type="text" class="form-control" id="cm_industry" placeholder="z. B. Maschinenbau" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Website</label>
+                            <div class="input-group"><span class="input-group-text"><i class="bi bi-globe text-muted"></i></span>
+                            <input type="text" class="form-control" id="cm_website" placeholder="www.firma.de" /></div>
+                        </div>
+                        <div class="col-12 address-suggest-wrap">
+                            <label class="form-label">Straße</label>
+                            <input type="text" class="form-control" id="cm_street" placeholder="Musterstraße 1"
+                                   oninput="addressLookup('cm')" />
+                            <div class="address-suggest-list" id="cm_street_suggest"></div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">PLZ</label>
+                            <input type="text" class="form-control" id="cm_zip" placeholder="80333" maxlength="5"
+                                   oninput="plzLookup('cm')" />
+                            <div class="field-status" id="cm_zip_status"></div>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Ort</label>
+                            <input type="text" class="form-control" id="cm_city" placeholder="München" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Land</label>
+                            <input type="text" class="form-control" id="cm_country" placeholder="Deutschland" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telefon</label>
+                            <div class="input-group"><span class="input-group-text"><i class="bi bi-telephone text-muted"></i></span>
+                            <input type="text" class="form-control" id="cm_phone" placeholder="+49 89 123456" /></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">E-Mail</label>
+                            <div class="input-group"><span class="input-group-text"><i class="bi bi-envelope text-muted"></i></span>
+                            <input type="email" class="form-control" id="cm_email" placeholder="info@firma.de"
+                                   oninput="validateEmail('cm_email')" /></div>
+                            <div class="field-status" id="cm_email_status"></div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notizen</label>
+                            <textarea class="form-control" id="cm_notes" rows="2" placeholder="Interne Notizen ..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="cm_fav" />
+                                <label class="form-check-label" for="cm_fav"><i class="bi bi-star-fill me-1" style="color:var(--mc-gold);"></i> Als Favorit</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="create-modal-footer">
+                    <button class="btn-mc-ghost" onclick="closeCreateModal('company')">Abbrechen</button>
+                    <button class="btn-mc-primary" id="companyModalSave" onclick="saveCompany()">
+                        <i class="bi bi-check-lg me-1"></i> Firma anlegen
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ Modal: Neuer Kontakt ═══════════════════════════════════════ -->
+        <div class="create-modal-overlay" id="contactModalOverlay" onclick="closeCreateModal('contact')">
+            <div class="create-modal create-modal-lg" onclick="event.stopPropagation()">
+                <div class="create-modal-header">
+                    <div class="create-modal-header-icon contact"><i class="bi bi-person-plus"></i></div>
+                    <div>
+                        <div class="create-modal-title">Neuen Kontakt anlegen</div>
+                        <div class="create-modal-subtitle">Kontaktdatenbank</div>
+                    </div>
+                    <button class="create-modal-close" onclick="closeCreateModal('contact')">&times;</button>
+                </div>
+                <div class="create-modal-body">
+                    <div class="create-modal-error" id="contactModalError"></div>
+                    <div class="dupe-warn" id="contactDupeWarn" style="display:none;"></div>
+                    <div class="create-modal-section">Persönliche Daten</div>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Anrede</label>
+                            <select class="form-select" id="ct_salutation">
+                                <option value="">—</option><option>Herr</option><option>Frau</option><option>Divers</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Titel</label>
+                            <input type="text" class="form-control" id="ct_title" placeholder="Dr., Prof." />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Vorname</label>
+                            <input type="text" class="form-control" id="ct_first" oninput="checkContactDupe()" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Nachname <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="ct_last" oninput="checkContactDupe()" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Firma</label>
+                            <select class="form-select" id="ct_company"><option value="">— Keine Firma —</option></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Position</label>
+                            <input type="text" class="form-control" id="ct_position" placeholder="z. B. GF" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Abteilung</label>
+                            <input type="text" class="form-control" id="ct_dept" />
+                        </div>
+                    </div>
+                    <div class="create-modal-section">Kontaktdaten</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">E-Mail</label>
+                            <div class="input-group"><span class="input-group-text"><i class="bi bi-envelope text-muted"></i></span>
+                            <input type="email" class="form-control" id="ct_email" placeholder="name@firma.de"
+                                   oninput="validateEmail('ct_email'); checkContactDupe()" /></div>
+                            <div class="field-status" id="ct_email_status"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telefon</label>
+                            <div class="input-group"><span class="input-group-text"><i class="bi bi-telephone text-muted"></i></span>
+                            <input type="text" class="form-control" id="ct_phone" /></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Mobil</label>
+                            <div class="input-group"><span class="input-group-text"><i class="bi bi-phone text-muted"></i></span>
+                            <input type="text" class="form-control" id="ct_mobile" /></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Fax</label>
+                            <div class="input-group"><span class="input-group-text"><i class="bi bi-printer text-muted"></i></span>
+                            <input type="text" class="form-control" id="ct_fax" /></div>
+                        </div>
+                    </div>
+                    <div class="create-modal-section">Adresse</div>
+                    <div class="row g-3">
+                        <div class="col-12 address-suggest-wrap">
+                            <label class="form-label">Straße</label>
+                            <input type="text" class="form-control" id="ct_street" placeholder="Musterstraße 1"
+                                   oninput="addressLookup('ct')" />
+                            <div class="address-suggest-list" id="ct_street_suggest"></div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">PLZ</label>
+                            <input type="text" class="form-control" id="ct_zip" placeholder="80333" maxlength="5"
+                                   oninput="plzLookup('ct')" />
+                            <div class="field-status" id="ct_zip_status"></div>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Ort</label>
+                            <input type="text" class="form-control" id="ct_city" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Land</label>
+                            <input type="text" class="form-control" id="ct_country" />
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-12">
+                            <label class="form-label">Notizen</label>
+                            <textarea class="form-control" id="ct_notes" rows="2"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="ct_fav" />
+                                <label class="form-check-label" for="ct_fav"><i class="bi bi-star-fill me-1" style="color:var(--mc-gold);"></i> Als Favorit</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="create-modal-footer">
+                    <button class="btn-mc-ghost" onclick="closeCreateModal('contact')">Abbrechen</button>
+                    <button class="btn-mc-primary" id="contactModalSave" onclick="saveContact()">
+                        <i class="bi bi-check-lg me-1"></i> Kontakt anlegen
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <footer class="mc-footer">
             <span>&copy; @DateTime.Now.Year Merkur Privatbank KGaA – Kontaktdatenbank</span>
             <span class="ms-3 text-muted small">Vertraulich</span>
@@ -345,6 +547,379 @@
                     '<span style="color:#e74c3c;">Verbindungsfehler. Bitte versuche es erneut.<\/span>');
             } finally {
                 document.getElementById('aiModalEingabe')?.focus();
+            }
+        }
+        // ── PLZ → Ort Lookup (zippopotam.us) ───────────────────────────
+        var plzTimer = {};
+        function plzLookup(prefix) {
+            var inp = document.getElementById(prefix + '_zip');
+            var status = document.getElementById(prefix + '_zip_status');
+            var val = inp.value.replace(/\s/g, '');
+            clearTimeout(plzTimer[prefix]);
+            if (val.length < 4) { status.innerHTML = ''; inp.classList.remove('is-valid-custom','is-invalid-custom'); return; }
+            if (val.length === 5 && /^\d{5}$/.test(val)) {
+                status.innerHTML = '<i class="bi bi-hourglass-split"><\/i> Suche ...';
+                status.className = 'field-status loading';
+                plzTimer[prefix] = setTimeout(async function() {
+                    try {
+                        var res = await fetch('https://api.zippopotam.us/de/' + val);
+                        if (res.ok) {
+                            var data = await res.json();
+                            var place = data.places[0];
+                            document.getElementById(prefix + '_city').value = place['place name'];
+                            document.getElementById(prefix + '_country').value = 'Deutschland';
+                            inp.classList.add('is-valid-custom');
+                            inp.classList.remove('is-invalid-custom');
+                            status.innerHTML = '<i class="bi bi-check-circle-fill"><\/i> ' + place['place name'];
+                            status.className = 'field-status valid';
+                        } else {
+                            inp.classList.add('is-invalid-custom');
+                            inp.classList.remove('is-valid-custom');
+                            status.innerHTML = '<i class="bi bi-x-circle"><\/i> PLZ nicht gefunden';
+                            status.className = 'field-status invalid';
+                        }
+                    } catch(e) {
+                        status.innerHTML = '';
+                    }
+                }, 300);
+            }
+        }
+
+        // ── Adress-Vorschläge (Nominatim) ────────────────────────────
+        var addrTimer = {};
+        function addressLookup(prefix) {
+            var inp = document.getElementById(prefix + '_street');
+            var list = document.getElementById(prefix + '_street_suggest');
+            var val = inp.value.trim();
+            clearTimeout(addrTimer[prefix]);
+            if (val.length < 5) { list.classList.remove('open'); return; }
+            addrTimer[prefix] = setTimeout(async function() {
+                try {
+                    var city = document.getElementById(prefix + '_city').value || '';
+                    var q = val + (city ? ', ' + city : '') + ', Deutschland';
+                    var res = await fetch('https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&countrycodes=de&accept-language=de&q=' + encodeURIComponent(q));
+                    var results = await res.json();
+                    if (results.length === 0) { list.classList.remove('open'); return; }
+                    list.innerHTML = '';
+                    results.forEach(function(r) {
+                        var a = r.address || {};
+                        var road = a.road || '';
+                        var nr = a.house_number || '';
+                        var plz = a.postcode || '';
+                        var ort = a.city || a.town || a.village || a.municipality || '';
+                        var div = document.createElement('div');
+                        div.className = 'address-suggest-item';
+                        div.innerHTML = '<i class="bi bi-geo-alt"><\/i><div><div>' + road + (nr ? ' ' + nr : '') + '<\/div><small>' + plz + ' ' + ort + '<\/small><\/div>';
+                        div.onclick = function() {
+                            document.getElementById(prefix + '_street').value = road + (nr ? ' ' + nr : '');
+                            if (plz) document.getElementById(prefix + '_zip').value = plz;
+                            if (ort) document.getElementById(prefix + '_city').value = ort;
+                            document.getElementById(prefix + '_country').value = 'Deutschland';
+                            list.classList.remove('open');
+                            var zipStatus = document.getElementById(prefix + '_zip_status');
+                            if (plz && zipStatus) {
+                                zipStatus.innerHTML = '<i class="bi bi-check-circle-fill"><\/i> ' + ort;
+                                zipStatus.className = 'field-status valid';
+                                document.getElementById(prefix + '_zip').classList.add('is-valid-custom');
+                            }
+                        };
+                        list.appendChild(div);
+                    });
+                    list.classList.add('open');
+                } catch(e) { list.classList.remove('open'); }
+            }, 400);
+        }
+
+        document.addEventListener('click', function(e) {
+            document.querySelectorAll('.address-suggest-list').forEach(function(l) {
+                if (!l.parentElement.contains(e.target)) l.classList.remove('open');
+            });
+        });
+
+        // ── E-Mail-Validierung ───────────────────────────────────────
+        var emailTypos = { 'gmial.com':'gmail.com', 'gamil.com':'gmail.com', 'gmal.com':'gmail.com',
+            'outlok.com':'outlook.com', 'outook.com':'outlook.com', 'hotmal.com':'hotmail.com',
+            'yaho.de':'yahoo.de', 'yahooo.de':'yahoo.de', 'web.de.':'web.de', 'gmx.ed':'gmx.de' };
+
+        function validateEmail(inputId) {
+            var inp = document.getElementById(inputId);
+            var status = document.getElementById(inputId + '_status');
+            var val = inp.value.trim();
+            if (!val) {
+                inp.classList.remove('is-valid-custom','is-invalid-custom');
+                status.innerHTML = '';
+                return;
+            }
+            var re = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]{2,}$/;
+            if (!re.test(val)) {
+                inp.classList.add('is-invalid-custom');
+                inp.classList.remove('is-valid-custom');
+                status.innerHTML = '<i class="bi bi-x-circle"><\/i> Ungültiges Format';
+                status.className = 'field-status invalid';
+                return;
+            }
+            var domain = val.split('@@')[1].toLowerCase();
+            if (emailTypos[domain]) {
+                inp.classList.add('is-invalid-custom');
+                inp.classList.remove('is-valid-custom');
+                status.innerHTML = '<i class="bi bi-exclamation-triangle"><\/i> Meinten Sie @@' + emailTypos[domain] + '?';
+                status.className = 'field-status invalid';
+                return;
+            }
+            inp.classList.add('is-valid-custom');
+            inp.classList.remove('is-invalid-custom');
+            status.innerHTML = '<i class="bi bi-check-circle-fill"><\/i> Gültig';
+            status.className = 'field-status valid';
+        }
+
+        // ── Dubletten-Prüfung ─────────────────────────────────────────
+        var dupeTimerCm, dupeTimerCt;
+
+        function checkCompanyDupe() {
+            clearTimeout(dupeTimerCm);
+            var name = document.getElementById('cm_name').value.trim();
+            var box = document.getElementById('companyDupeWarn');
+            if (name.length < 3) { box.style.display = 'none'; return; }
+            dupeTimerCm = setTimeout(async function() {
+                try {
+                    var res = await fetch('/api/companies/check-duplicate?name=' + encodeURIComponent(name));
+                    var data = await res.json();
+                    if (data.duplicates.length > 0) {
+                        var html = '<i class="bi bi-exclamation-triangle-fill me-1"><\/i><strong>Mögliche Dublette:<\/strong><div class="dupe-list">';
+                        data.duplicates.forEach(function(d) {
+                            html += '<a href="/Companies/Details/' + d.id + '" target="_blank" class="dupe-item">'
+                                + '<i class="bi bi-buildings"><\/i>'
+                                + '<div><strong>' + d.name + '<\/strong>'
+                                + (d.city ? '<br><small>' + d.city + '<\/small>' : '')
+                                + (d.email ? '<br><small>' + d.email + '<\/small>' : '')
+                                + '<\/div><span class="dupe-badge">' + d.contacts + ' Kontakte<\/span><\/a>';
+                        });
+                        html += '<\/div>';
+                        box.innerHTML = html;
+                        box.style.display = 'block';
+                    } else {
+                        box.style.display = 'none';
+                    }
+                } catch(e) {}
+            }, 400);
+        }
+
+        function checkContactDupe() {
+            clearTimeout(dupeTimerCt);
+            var last = document.getElementById('ct_last').value.trim();
+            var first = document.getElementById('ct_first').value.trim();
+            var email = document.getElementById('ct_email').value.trim();
+            var box = document.getElementById('contactDupeWarn');
+            if (last.length < 2 && email.length < 4) { box.style.display = 'none'; return; }
+            dupeTimerCt = setTimeout(async function() {
+                try {
+                    var params = [];
+                    if (last) params.push('lastName=' + encodeURIComponent(last));
+                    if (first) params.push('firstName=' + encodeURIComponent(first));
+                    if (email && email.indexOf('@@') > 0) params.push('email=' + encodeURIComponent(email));
+                    var res = await fetch('/api/contacts/check-duplicate?' + params.join('&'));
+                    var data = await res.json();
+                    if (data.duplicates.length > 0) {
+                        var html = '<i class="bi bi-exclamation-triangle-fill me-1"><\/i><strong>Mögliche Dublette:<\/strong><div class="dupe-list">';
+                        data.duplicates.forEach(function(d) {
+                            html += '<a href="/Contacts/Details/' + d.id + '" target="_blank" class="dupe-item">'
+                                + '<i class="bi bi-person"><\/i>'
+                                + '<div><strong>' + d.name + '<\/strong>'
+                                + (d.company ? '<br><small>' + d.company + '<\/small>' : '')
+                                + (d.email ? '<br><small>' + d.email + '<\/small>' : '')
+                                + (d.city ? '<br><small>' + d.city + '<\/small>' : '')
+                                + '<\/div><\/a>';
+                        });
+                        html += '<\/div>';
+                        box.innerHTML = html;
+                        box.style.display = 'block';
+                    } else {
+                        box.style.display = 'none';
+                    }
+                } catch(e) {}
+            }, 400);
+        }
+
+        // ── Firmen-Lookup (Nominatim) ─────────────────────────────────
+        var companyTimer;
+        function companyLookup() {
+            var inp = document.getElementById('cm_name');
+            var list = document.getElementById('cm_name_suggest');
+            var val = inp.value.trim();
+            clearTimeout(companyTimer);
+            if (val.length < 3) { list.classList.remove('open'); return; }
+            companyTimer = setTimeout(async function() {
+                try {
+                    var res = await fetch('https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=6&countrycodes=de,at,ch&accept-language=de&q=' + encodeURIComponent(val));
+                    var results = await res.json();
+                    var filtered = results.filter(function(r) {
+                        var t = (r.type || '').toLowerCase();
+                        var c = (r['class'] || '').toLowerCase();
+                        return c === 'office' || c === 'shop' || c === 'amenity' || c === 'building'
+                            || c === 'industrial' || c === 'company' || t === 'company'
+                            || t === 'office' || t === 'commercial' || t === 'industrial'
+                            || (r.display_name || '').toLowerCase().indexOf(val.toLowerCase()) >= 0;
+                    });
+                    if (filtered.length === 0 && results.length > 0) filtered = results.slice(0, 4);
+                    if (filtered.length === 0) { list.classList.remove('open'); return; }
+                    list.innerHTML = '';
+                    filtered.forEach(function(r) {
+                        var a = r.address || {};
+                        var road = a.road || '';
+                        var nr = a.house_number || '';
+                        var plz = a.postcode || '';
+                        var ort = a.city || a.town || a.village || a.municipality || '';
+                        var land = a.country || '';
+                        var displayName = r.display_name.split(',')[0];
+                        var div = document.createElement('div');
+                        div.className = 'address-suggest-item';
+                        div.innerHTML = '<i class="bi bi-building"><\/i><div style="flex:1;min-width:0;"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + displayName + '<\/div><small>' + [road + (nr ? ' ' + nr : ''), plz, ort].filter(Boolean).join(', ') + '<\/small><\/div>';
+                        div.onclick = function() {
+                            inp.value = displayName;
+                            if (road) document.getElementById('cm_street').value = road + (nr ? ' ' + nr : '');
+                            if (plz) document.getElementById('cm_zip').value = plz;
+                            if (ort) document.getElementById('cm_city').value = ort;
+                            if (land) document.getElementById('cm_country').value = land;
+                            list.classList.remove('open');
+                            var zipStatus = document.getElementById('cm_zip_status');
+                            if (plz && ort && zipStatus) {
+                                zipStatus.innerHTML = '<i class="bi bi-check-circle-fill"><\/i> ' + ort;
+                                zipStatus.className = 'field-status valid';
+                                document.getElementById('cm_zip').classList.add('is-valid-custom');
+                            }
+                        };
+                        list.appendChild(div);
+                    });
+                    list.classList.add('open');
+                } catch(e) { list.classList.remove('open'); }
+            }, 500);
+        }
+
+        // ── Create-Modals ────────────────────────────────────────────────
+        function openCreateModal(type) {
+            var overlay = document.getElementById(type + 'ModalOverlay');
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            if (type === 'contact') loadCompanySelect();
+            setTimeout(function() {
+                var first = overlay.querySelector('input:not([type=hidden]):not([type=checkbox])');
+                if (first) first.focus();
+            }, 100);
+        }
+
+        function closeCreateModal(type) {
+            var overlay = document.getElementById(type + 'ModalOverlay');
+            overlay.classList.remove('open');
+            document.body.style.overflow = '';
+            var err = document.getElementById(type + 'ModalError');
+            if (err) err.style.display = 'none';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeCreateModal('company');
+                closeCreateModal('contact');
+            }
+        });
+
+        async function loadCompanySelect() {
+            try {
+                var res = await fetch('/api/companies/list');
+                var list = await res.json();
+                var sel = document.getElementById('ct_company');
+                sel.innerHTML = '<option value="">— Keine Firma —<\/option>';
+                list.forEach(function(c) {
+                    sel.innerHTML += '<option value="' + c.id + '">' + c.name + '<\/option>';
+                });
+            } catch(e) {}
+        }
+
+        async function saveCompany() {
+            var btn = document.getElementById('companyModalSave');
+            var err = document.getElementById('companyModalError');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split me-1"><\/i> Speichern ...';
+            err.style.display = 'none';
+            try {
+                var res = await fetch('/api/companies/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('cm_name').value,
+                        industry: document.getElementById('cm_industry').value,
+                        website: document.getElementById('cm_website').value,
+                        street: document.getElementById('cm_street').value,
+                        zipCode: document.getElementById('cm_zip').value,
+                        city: document.getElementById('cm_city').value,
+                        country: document.getElementById('cm_country').value,
+                        phone: document.getElementById('cm_phone').value,
+                        email: document.getElementById('cm_email').value,
+                        notes: document.getElementById('cm_notes').value,
+                        isFavorite: document.getElementById('cm_fav').checked
+                    })
+                });
+                var data = await res.json();
+                if (!res.ok) {
+                    err.textContent = data.error || 'Fehler beim Speichern.';
+                    err.style.display = 'block';
+                } else {
+                    closeCreateModal('company');
+                    window.location.href = '/Companies/Details/' + data.id;
+                }
+            } catch(e) {
+                err.textContent = 'Verbindungsfehler.';
+                err.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-lg me-1"><\/i> Firma anlegen';
+            }
+        }
+
+        async function saveContact() {
+            var btn = document.getElementById('contactModalSave');
+            var err = document.getElementById('contactModalError');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split me-1"><\/i> Speichern ...';
+            err.style.display = 'none';
+            try {
+                var companyId = document.getElementById('ct_company').value;
+                var res = await fetch('/api/contacts/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        salutation: document.getElementById('ct_salutation').value,
+                        title: document.getElementById('ct_title').value,
+                        firstName: document.getElementById('ct_first').value,
+                        lastName: document.getElementById('ct_last').value,
+                        companyId: companyId ? parseInt(companyId) : null,
+                        position: document.getElementById('ct_position').value,
+                        department: document.getElementById('ct_dept').value,
+                        email: document.getElementById('ct_email').value,
+                        phone: document.getElementById('ct_phone').value,
+                        mobile: document.getElementById('ct_mobile').value,
+                        fax: document.getElementById('ct_fax').value,
+                        street: document.getElementById('ct_street').value,
+                        zipCode: document.getElementById('ct_zip').value,
+                        city: document.getElementById('ct_city').value,
+                        country: document.getElementById('ct_country').value,
+                        notes: document.getElementById('ct_notes').value,
+                        isFavorite: document.getElementById('ct_fav').checked
+                    })
+                });
+                var data = await res.json();
+                if (!res.ok) {
+                    err.textContent = data.error || 'Fehler beim Speichern.';
+                    err.style.display = 'block';
+                } else {
+                    closeCreateModal('contact');
+                    window.location.href = '/Contacts/Details/' + data.id;
+                }
+            } catch(e) {
+                err.textContent = 'Verbindungsfehler.';
+                err.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-lg me-1"><\/i> Kontakt anlegen';
             }
         }
     </script>

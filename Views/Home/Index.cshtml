@@ -11,12 +11,12 @@
         <p class="mc-page-subtitle">Überblick Ihrer Kontaktdatenbank</p>
     </div>
     <div class="d-flex gap-2 flex-wrap">
-        <a asp-controller="Companies" asp-action="Create" class="btn-mc-primary">
+        <button type="button" class="btn-mc-primary" onclick="openCreateModal('company')">
             <i class="bi bi-plus-lg"></i> Neue Firma
-        </a>
-        <a asp-controller="Contacts" asp-action="Create" class="btn-mc-outline">
+        </button>
+        <button type="button" class="btn-mc-outline" onclick="openCreateModal('contact')">
             <i class="bi bi-person-plus"></i> Neuer Kontakt
-        </a>
+        </button>
     </div>
 </div>
 
